@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servicios - Fusión Peluquería</title>
+    <link rel="stylesheet" href="/style/style.css">
+    <link rel="preload" href="css/normalize.css" as="style">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;1,400&family=PT+Sans:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        :root {
+            --negro: #111;
+            --blanco: #fafaf8;
+            --rosa: #e8c4d4;
+            --rosa-oscuro: #c9899f;
+            --gris: #f4f4f2;
+            --gris-texto: #666;
+        }
+
+        /* ══════════════════════════
+           HERO SERVICIOS
+        ══════════════════════════ */
+        .servicios-hero {
+            background-color: var(--negro);
+            color: white;
+            padding: 9rem 0 7rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .servicios-hero::before {
+            content: '';
+            position: absolute;
+            bottom: -8rem;
+            left: -5rem;
+            width: 50rem;
+            height: 50rem;
+            background: radial-gradient(circle, rgba(232,196,212,0.12) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: var(--rosa);
+            color: var(--negro);
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            padding: 0.6rem 1.8rem;
+            border-radius: 50px;
+            margin-bottom: 2.5rem;
+            font-family: 'Open Sans', sans-serif;
+        }
+
+        .servicios-hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(3.5rem, 5vw, 6.5rem);
+            font-weight: 700;
+            color: white;
+            text-align: left;
+            line-height: 1.15;
+            margin-bottom: 2rem;
+            display: block;
+            justify-content: unset;
+            align-items: unset;
+        }
+
+        .servicios-hero h1 em {
+            font-style: italic;
+            color: var(--rosa);
+        }
+
+        .servicios-hero p {
+            font-size: 1.7rem;
+            color: rgba(255,255,255,0.65);
+            max-width: 50rem;
+            line-height: 1.8;
+        }
+
+        /* ══════════════════════════
+           LISTA DE SERVICIOS
+        ══════════════════════════ */
+        .servicios-seccion {
+            padding: 8rem 0;
+            background: var(--blanco);
+        }
+
+        /* Cada fila de servicio */
+        .servicio-fila {
+            display: grid;
+            grid-template-columns: 38rem 1fr;
+            gap: 6rem;
+            align-items: center;
+            padding: 6rem 0;
+            border-bottom: 1px solid #ebebeb;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+
+        .servicio-fila.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Filas pares: imagen a la derecha */
+        .servicio-fila:nth-child(even) {
+            grid-template-columns: 1fr 38rem;
+        }
+
+        .servicio-fila:nth-child(even) .servicio-fila__imagen {
+            order: 2;
+        }
+
+        .servicio-fila:nth-child(even) .servicio-fila__info {
+            order: 1;
+        }
+
+        .servicio-fila:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 768px) {
+            .servicio-fila,
+            .servicio-fila:nth-child(even) {
+                grid-template-columns: 1fr;
+                gap: 2.5rem;
+            }
+
+            .servicio-fila:nth-child(even) .servicio-fila__imagen {
+                order: 0;
+            }
+
+            .servicio-fila:nth-child(even) .servicio-fila__info {
+                order: 0;
+            }
+        }
+
+        /* Imagen del servicio */
+        .servicio-fila__imagen {
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            aspect-ratio: 4/3;
+            background: var(--gris);
+        }
+
+        .servicio-fila__imagen img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+            display: block;
+        }
+
+        .servicio-fila:hover .servicio-fila__imagen img {
+            transform: scale(1.04);
+        }
+
+        /* Tag de número */
+        .servicio-numero {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--rosa-oscuro);
+            font-family: 'Open Sans', sans-serif;
+            margin-bottom: 1.2rem;
+        }
+
+        .servicio-numero::before {
+            content: '';
+            display: inline-block;
+            width: 3rem;
+            height: 2px;
+            background: var(--rosa-oscuro);
+        }
+
+        /* Texto del servicio */
+        .servicio-fila__info h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.2rem;
+            color: var(--negro);
+            text-align: left;
+            line-height: 1.2;
+            margin-bottom: 1.8rem;
+            padding: 0;
+        }
+
+        .servicio-fila__info p {
+            font-size: 1.55rem;
+            color: var(--gris-texto);
+            line-height: 1.9;
+            margin-bottom: 2rem;
+        }
+
+        /* Tags de sub-servicios */
+        .servicio-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-top: 1.5rem;
+        }
+
+        .stag {
+            background: var(--gris);
+            color: #444;
+            font-size: 1.25rem;
+            padding: 0.5rem 1.4rem;
+            border-radius: 50px;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 600;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .stag:hover {
+            background: var(--negro);
+            color: white;
+        }
+
+        /* ══════════════════════════
+           BANNER CTA
+        ══════════════════════════ */
+        .cta-banda {
+            background: var(--rosa);
+            padding: 7rem 0;
+            text-align: center;
+        }
+
+        .cta-banda h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            color: var(--negro);
+            padding: 0 0 1.5rem;
+        }
+
+        .cta-banda p {
+            font-size: 1.7rem;
+            color: #555;
+            margin-bottom: 3.5rem;
+        }
+
+        .btn-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            background: var(--negro);
+            color: white;
+            padding: 1.6rem 4rem;
+            border-radius: 50px;
+            font-size: 1.6rem;
+            font-family: 'PT Sans', sans-serif;
+            font-weight: 700;
+            text-decoration: none;
+            letter-spacing: 0.05em;
+            transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .btn-cta:hover {
+            background: #333;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        /* ══════════════════════════
+           FORMULARIO CONTACTO
+        ══════════════════════════ */
+        .formu-seccion {
+            padding: 8rem 0;
+            background: var(--blanco);
+        }
+
+        .formu-seccion h2 {
+            font-family: 'Playfair Display', serif;
+            padding-bottom: 1rem;
+            color: var(--negro);
+        }
+
+        .formu-subtitulo {
+            text-align: center;
+            color: var(--gris-texto);
+            font-size: 1.6rem;
+            margin-bottom: 5rem;
+        }
+
+        .container {
+            max-width: 65rem;
+            margin: 0 auto;
+            background: white;
+            padding: 4rem 5rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+            border-top: 4px solid var(--negro);
+        }
+
+        .container h1 {
+            display: none; /* ya está el h2 de sección */
+        }
+
+        .form-group {
+            margin-bottom: 2.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #222;
+            margin-bottom: 0.7rem;
+            font-family: 'PT Sans', sans-serif;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 1.3rem 1.6rem;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            font-family: 'Open Sans', sans-serif;
+            color: #333;
+            background: #fafafa;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--negro);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(0,0,0,0.05);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 14rem;
+        }
+
+        .container button[type="submit"] {
+            width: 100%;
+            padding: 1.5rem;
+            background: var(--negro);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.6rem;
+            font-family: 'PT Sans', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            transition: background 0.3s ease, transform 0.15s ease;
+        }
+
+        .container button[type="submit"]:hover {
+            background: #333;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 3rem 2rem;
+            }
+        }
+
+        /* ══════════════════════════
+           MAPA
+        ══════════════════════════ */
+        .ubicacion-seccion {
+            padding: 8rem 0;
+            background: var(--gris);
+        }
+
+        .ubicacion-seccion h2 {
+            font-family: 'Playfair Display', serif;
+            padding-bottom: 1rem;
+            color: var(--negro);
+        }
+
+        .ubicacion-subtitulo {
+            text-align: center;
+            color: var(--gris-texto);
+            font-size: 1.6rem;
+            margin-bottom: 4rem;
+        }
+
+        .mapa-wrapper {
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+            max-width: 90rem;
+            margin: 0 auto;
+        }
+
+        .mapa-wrapper iframe {
+            display: block;
+            width: 100%;
+            height: 45rem;
+            border: 0;
+        }
+
+        .mapa-datos {
+            display: flex;
+            justify-content: center;
+            gap: 5rem;
+            margin-top: 3.5rem;
+            flex-wrap: wrap;
+        }
+
+        .mapa-dato {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.5rem;
+            color: var(--gris-texto);
+            font-family: 'Open Sans', sans-serif;
+        }
+
+        .mapa-dato span:first-child {
+            font-size: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="header">
+        <div class="contenedor">
+            <div class="barra">
+                <div class="logofusion">
+                    <img src="/img/logofusion.jpg" alt="logofusion">
+                </div>
+                <nav class="navegacion">
+                 
+                    <a href="nosotros.html" class="navegacion__enlace">Nosotros</a>
+                    <a href="servicios.html" class="navegacion__enlace">Servicios</a> 
+                    <a href="productos.html" class="navegacion__enlace">Productos</a>
+                    <a href="turnos.html" class="navegacion__enlace nav-turno-btn activo">Reservar turno</a>
+                    <a href="contacto.html" class="navegacion__enlace">Contacto</a>
+                </nav>
+            </div>
+            <div id="carrito-icono" class="carrito-icono">
+                <img src="https://img.icons8.com/ios/452/shopping-cart.png" alt="Carrito">
+                <span id="contador-carrito" class="contador-carrito">0</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+
+        <!-- Carrito emergente -->
+        <div class="carrito-emergente" id="carrito-emergente">
+            <div class="carrito-contenido">
+                <h2>Tu Carrito</h2>
+                <div id="carrito-lista"></div>
+                <p>Total: <span id="total-carrito">$0.00</span></p>
+                <button id="vaciar-carrito">Vaciar Carrito</button>
+                <button id="finalizar-compra">Finalizar Compra</button>
+                <button id="volver">Cerrar</button>
+            </div>
+        </div>
+
+        <!-- ── HERO ── -->
+        <section class="servicios-hero">
+            <div class="contenedor">
+                <span class="hero-badge">✦ Fusión Peluquería</span>
+                <h1>Todo lo que tu cabello<br><em>merece</em></h1>
+                <p>Servicios profesionales a cargo de un equipo familiar con 15 años de experiencia en San Miguel.</p>
+            </div>
+        </section>
+
+        <!-- ── SERVICIOS ── -->
+        <section class="servicios-seccion">
+            <div class="contenedor">
+
+                <!-- Lavado -->
+                <div class="servicio-fila">
+                    <div class="servicio-fila__imagen">
+                        <img src="img/lavado.jpg" alt="Servicio de lavado">
+                    </div>
+                    <div class="servicio-fila__info">
+                        <span class="servicio-numero">01</span>
+                        <h3>Lavado</h3>
+                        <p>El primero de los servicios, el más importante. Lavarte el cabello previo a un corte o peinado y/o luego de una coloración hace al inicio y la finalización perfecta de tu experiencia en FUSIÓN. Contamos con las mejores manos en nuestro equipo y una amplia variedad de marcas Premium que te garantizan un momento único.</p>
+                        <p>Las grandes marcas de la cosmética argentina, francesa, británica e italiana dan garantía de formación y un producto a medida según tu deseo y necesidad.</p>
+                        <div class="servicio-tags">
+                            <span class="stag">Marcas Premium</span>
+                            <span class="stag">Asesoramiento</span>
+                            <span class="stag">Cuero cabelludo</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Corte -->
+                <div class="servicio-fila">
+                    <div class="servicio-fila__imagen">
+                        <img src="img/corte.jpg" alt="Servicio de corte">
+                    </div>
+                    <div class="servicio-fila__info">
+                        <span class="servicio-numero">02</span>
+                        <h3>Corte</h3>
+                        <p>Tijeras, máquinas, varios filos, precisión, técnica y sobre todo un estilo único hacen fundamental el Corte en FUSIÓN. Nuestro equipo de profesionales podrá asesorarte y hacer lucir tu pelo con el look ideal.</p>
+                        <p>El corte y peinado está en constante perfeccionamiento sobre nuevas técnicas y tendencias. Cada corte es diseñado exclusivamente para vos y tu vida cotidiana.</p>
+                        <div class="servicio-tags">
+                            <span class="stag">Damas</span>
+                            <span class="stag">Caballeros</span>
+                            <span class="stag">Niños</span>
+                            <span class="stag">Tendencias</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Peinados -->
+                <div class="servicio-fila">
+                    <div class="servicio-fila__imagen">
+                        <img src="img/peinado.jpg" alt="Servicio de peinado">
+                    </div>
+                    <div class="servicio-fila__info">
+                        <span class="servicio-numero">03</span>
+                        <h3>Peinados</h3>
+                        <p>Existe una amplia forma de llegar a tu peinado ideal. Desde el brushing clásico hasta ondas y peinados especiales para eventos, nos adaptamos a cada ocasión y a cada tipo de cabello.</p>
+                        <div class="servicio-tags">
+                            <span class="stag">Brushing</span>
+                            <span class="stag">Planchita</span>
+                            <span class="stag">Ondas</span>
+                            <span class="stag">Eventos especiales</span>
+                            <span class="stag">Recogidos</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coloración -->
+                <div class="servicio-fila">
+                    <div class="servicio-fila__imagen">
+                        <img src="img/color.jpg" alt="Servicio de coloración">
+                    </div>
+                    <div class="servicio-fila__info">
+                        <span class="servicio-numero">04</span>
+                        <h3>Coloración</h3>
+                        <p>El servicio de color es un universo infinito dentro de nuestro salón. Nos perfeccionamos constantemente para poder abordar todas tus necesidades. Te asesoramos de manera minuciosa sobre qué es lo que tu cabello necesita y cuáles son los pasos para llegar al objetivo que deseás.</p>
+                        <p>Nuestra misión fundamental es mantener tu pelo sano y que luzca intacto. Garantizamos tu felicidad absoluta.</p>
+                        <div class="servicio-tags">
+                            <span class="stag">Mechas</span>
+                            <span class="stag">Balayage</span>
+                            <span class="stag">Color pleno</span>
+                            <span class="stag">Decoloración</span>
+                            <span class="stag">Matizado</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tratamientos -->
+                <div class="servicio-fila">
+                    <div class="servicio-fila__imagen">
+                        <img src="img/tratamiento.jpg" alt="Tratamientos capilares">
+                    </div>
+                    <div class="servicio-fila__info">
+                        <span class="servicio-numero">05</span>
+                        <h3>Tratamientos capilares</h3>
+                        <p>Tu cabello merece el mejor cuidado. Ofrecemos una amplia gama de tratamientos profesionales diseñados para recuperar la salud, el brillo y la vitalidad de tu cabello, sin importar su tipo o condición.</p>
+                        <div class="servicio-tags">
+                            <span class="stag">Keratina</span>
+                            <span class="stag">Botox capilar</span>
+                            <span class="stag">Alisados</span>
+                            <span class="stag">Nutrición</span>
+                            <span class="stag">Hidratación</span>
+                            <span class="stag">Reparación</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manicuría -->
+                <div class="servicio-fila">
+                    <div class="servicio-fila__imagen">
+                        <img src="img/manos.jpg" alt="Manicuría y pedicuría">
+                    </div>
+                    <div class="servicio-fila__info">
+                        <span class="servicio-numero">06</span>
+                        <h3>Manicuría y belleza de pies</h3>
+                        <p>El cuidado de las uñas ha tomado auge en los últimos años y se ha convertido en un accesorio fundamental de la moda. En FUSIÓN abogamos por brindar un servicio de excelencia en técnicas y vanguardias en el mundo del nail art.</p>
+                        <div class="servicio-tags">
+                            <span class="stag">Esmalte permanente</span>
+                            <span class="stag">Semipermanente</span>
+                            <span class="stag">Nail art</span>
+                            <span class="stag">Pedicuría</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ── CTA ── -->
+        <section class="cta-banda">
+            <div class="contenedor">
+                <h2>¿Querés reservar un turno?</h2>
+                <p>Escribinos y te atendemos a la brevedad</p>
+                <a href="contacto.html" class="btn-cta">✉️ Contactanos</a>
+            </div>
+        </section>
+
+        <!-- ── FORMULARIO ── -->
+        <section class="formu-seccion">
+            <div class="contenedor">
+                <h2>Comunicate con nosotros</h2>
+                <p class="formu-subtitulo">¿Tenés dudas sobre algún servicio? ¡Escribinos!</p>
+                <div class="container">
+                    <form action="https://formspree.io/f/xyzyjlky" method="post">
+                        <div class="form-group">
+                            <label for="nombre">Nombre</label>
+                            <input type="text" id="nombre" name="nombre" placeholder="Tu nombre completo" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Correo electrónico</label>
+                            <input type="email" id="email" name="email" placeholder="tucorreo@ejemplo.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="mensaje">Mensaje</label>
+                            <textarea id="mensaje" name="mensaje" rows="4" placeholder="¿En qué podemos ayudarte?" required></textarea>
+                        </div>
+                        <button type="submit">Enviar mensaje</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── MAPA ── -->
+        <section class="ubicacion-seccion">
+            <div class="contenedor">
+                <h2>Ubicación</h2>
+                <p class="ubicacion-subtitulo">Estamos en San Miguel, Buenos Aires. ¡Vení a visitarnos!</p>
+                <div class="mapa-wrapper">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3286.2960241634796!2d-58.71906502353306!3d-34.546059554456725!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95bcbd731d122c87%3A0x3b8b368166b383b!2sJos%C3%A9%20Mar%C3%ADa%20Paz%201612%2C%20B1663FSK%20San%20Miguel%2C%20Provincia%20de%20Buenos%20Aires!5e0!3m2!1ses!2sar!4v1731556572540!5m2!1ses!2sar"
+                        allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+                <div class="mapa-datos">
+                    <div class="mapa-dato"><span>📍</span><span>José María Paz 1612, San Miguel</span></div>
+                    <div class="mapa-dato"><span>🕐</span><span>Mar-Sab: 10:00–18:00</span></div>
+                    <div class="mapa-dato"><span>📞</span><span>(011) 7366-8263</span></div>
+                </div>
+            </div>
+        </section>
+
+
+<!-- ══════════════════════════════════════════
+     FOOTER PROFESIONAL — Fusión Peluquería
+     Copiá desde aquí hasta </footer> inclusive
+     y reemplazá el footer viejo en cada página
+══════════════════════════════════════════ -->
+<footer class="footer-pro">
+    <div class="contenedor">
+        <div class="footer-grid">
+
+            <!-- Columna 1: Marca -->
+            <div class="footer-marca">
+                <span class="footer-marca__logo">Fusión<span>Peluquería</span></span>
+                <p class="footer-marca__desc">
+                    15 años transformando cabellos y conquistando confianzas en San Miguel, Buenos Aires. Un equipo de familia para vos.
+                </p>
+                <div class="footer-redes">
+                    <a href="#" class="footer-red" title="Instagram">📸</a>
+                    <a href="#" class="footer-red" title="WhatsApp">💬</a>
+                    <a href="#" class="footer-red" title="Facebook">📘</a>
+                </div>
+            </div>
+
+            <!-- Columna 2: Navegación -->
+            <div class="footer-col">
+                <h4>Páginas</h4>
+                <ul>
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="nosotros.html">Nosotros</a></li>
+                    <li><a href="productos.html">Productos</a></li>
+                    <li><a href="contacto.html">Contacto</a></li>
+                </ul>
+            </div>
+
+            <!-- Columna 3: Servicios -->
+            <div class="footer-col">
+                <h4>Servicios</h4>
+                <ul>
+                    <li><a href="index.html">Corte & Peinado</a></li>
+                    <li><a href="index.html">Coloración & Mechas</a></li>
+                    <li><a href="index.html">Balayage</a></li>
+                    <li><a href="index.html">Keratina & Alisados</a></li>
+                    <li><a href="index.html">Botox Capilar</a></li>
+                    <li><a href="index.html">Manicuría</a></li>
+                    <li><a href="index.html">Depilación</a></li>
+                </ul>
+            </div>
+
+            <!-- Columna 4: Contacto -->
+            <div class="footer-contacto">
+                <h4>Contacto</h4>
+                <div class="footer-contacto-item">
+                    <span class="footer-contacto-item__icono">📍</span>
+                    <span class="footer-contacto-item__texto">José María Paz 1612,<br>San Miguel, Buenos Aires</span>
+                </div>
+                <div class="footer-contacto-item">
+                    <span class="footer-contacto-item__icono">📞</span>
+                    <span class="footer-contacto-item__texto">
+                        <a href="tel:+541112345678">(011) 7366-8263</a>
+                    </span>
+                </div>
+                <div class="footer-contacto-item">
+                    <span class="footer-contacto-item__icono">🕐</span>
+                    <span class="footer-contacto-item__texto">
+                        Mar–Sab: 10:00–18:00<br>
+                    </span>
+                </div>
+                <div class="footer-contacto-item">
+                    <span class="footer-contacto-item__icono">✉️</span>
+                    <span class="footer-contacto-item__texto">
+                        <a href="mailto:fusionpeluqueria@email.com">fusion.pelu@email.com</a>
+                    </span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Franja inferior -->
+        <div class="footer-bottom">
+            <p class="footer-bottom__copy">
+                © 2024 Fusión Peluquería · Todos los derechos reservados
+            </p>
+            <div class="footer-bottom__links">
+                <a href="#">Política de privacidad</a>
+                <a href="contacto.html">Contacto</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
+
+    </main>
+
+    <script src="js/script.js"></script>
+
+    <script>
+        // Animación de aparición al hacer scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.servicio-fila').forEach(el => observer.observe(el));
+    </script>
+
+    
+
+
+</body>
+</html>

@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contacto - Fusión Peluquería</title>
+    <link rel="stylesheet" href="/style/style.css" />
+    <link rel="preload" href="css/normalize.css" as="style" />
+    <link rel="stylesheet" href="css/normalize.css" />
+    <link
+      rel="preload"
+      href="https://fonts.googleapis.com/css2?family=Open+Sans&family=PT+Sans:wght@400;700&display=swap"
+      crossorigin="crossorigin"
+      as="font"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Open+Sans&family=PT+Sans:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="preload" href="css/style.css" as="style" />
+    <link rel="stylesheet" href="css/style.css" />
+
+    <a href="index.html" class="navegacion__enlace">Inicio</a>
+    <a href="nosotros.html" class="navegacion__enlace">Nosotros</a>
+    <a href="servicios.html" class="navegacion__enlace">Servicios</a>
+    <a href="productos.html" class="navegacion__enlace">Productos</a>
+    <a href="contacto.html" class="navegacion__enlace">Contacto</a>
+
+    <style>
+      /* ── Sección contacto ── */
+      .contacto-seccion {
+        padding: 6rem 0;
+      }
+
+      .contacto-seccion h2 {
+        padding-bottom: 1rem;
+      }
+
+      .contacto-subtitulo {
+        text-align: center;
+        color: #666;
+        font-size: 1.6rem;
+        margin-bottom: 5rem;
+      }
+
+      .contacto-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6rem;
+        align-items: start;
+      }
+
+      @media (max-width: 768px) {
+        .contacto-grid {
+          grid-template-columns: 1fr;
+          gap: 4rem;
+        }
+      }
+
+      /* ── Formulario ── */
+      .formulario-contacto {
+        background: #fff;
+        border-radius: 12px;
+        padding: 4rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+
+      .form-group {
+        margin-bottom: 2rem;
+      }
+
+      .form-group label {
+        display: block;
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.6rem;
+        font-family: "PT Sans", sans-serif;
+      }
+
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        width: 100%;
+        padding: 1.2rem 1.5rem;
+        border: 1.5px solid #ddd;
+        border-radius: 8px;
+        font-size: 1.5rem;
+        font-family: "Open Sans", sans-serif;
+        color: #333;
+        transition:
+          border-color 0.3s ease,
+          box-shadow 0.3s ease;
+        background: #fafafa;
+      }
+
+      .form-group input:focus,
+      .form-group textarea:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: #000;
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+        background: #fff;
+      }
+
+      .form-group textarea {
+        resize: vertical;
+        min-height: 14rem;
+      }
+
+      .btn-enviar {
+        width: 100%;
+        padding: 1.5rem;
+        background-color: #000;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.6rem;
+        font-family: "PT Sans", sans-serif;
+        font-weight: 700;
+        cursor: pointer;
+        letter-spacing: 0.05em;
+        transition:
+          background-color 0.3s ease,
+          transform 0.1s ease;
+      }
+
+      .btn-enviar:hover {
+        background-color: #333;
+      }
+
+      .btn-enviar:active {
+        transform: scale(0.99);
+      }
+
+      /* Mensaje de éxito */
+      .mensaje-exito {
+        display: none;
+        background: #e8f5e9;
+        border: 1px solid #a5d6a7;
+        color: #2e7d32;
+        padding: 1.5rem 2rem;
+        border-radius: 8px;
+        font-size: 1.5rem;
+        text-align: center;
+        margin-top: 2rem;
+      }
+
+      /* ── Info de contacto ── */
+      .info-contacto {
+        padding: 2rem 0;
+      }
+
+      .info-contacto h3 {
+        text-align: left;
+        font-size: 2.8rem;
+        margin-bottom: 1rem;
+      }
+
+      .info-contacto p {
+        font-size: 1.5rem;
+        color: #555;
+        line-height: 1.8;
+        margin-bottom: 3rem;
+      }
+
+      .info-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+      }
+
+      .info-item__icono {
+        font-size: 2.2rem;
+        flex-shrink: 0;
+        width: 4rem;
+        text-align: center;
+      }
+
+      .info-item__texto {
+        font-size: 1.5rem;
+        color: #444;
+        line-height: 1.6;
+      }
+
+      .info-item__texto strong {
+        display: block;
+        color: #111;
+        font-family: "PT Sans", sans-serif;
+        font-size: 1.6rem;
+        margin-bottom: 0.2rem;
+      }
+
+      .redes-sociales {
+        margin-top: 3rem;
+      }
+
+      .redes-sociales h4 {
+        text-align: left;
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+        padding: 0;
+      }
+
+      .redes-lista {
+        display: flex;
+        gap: 1.5rem;
+      }
+
+      .red-social {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.8rem;
+        padding: 1rem 2rem;
+        border: 1.5px solid #ddd;
+        border-radius: 50px;
+        font-size: 1.4rem;
+        color: #333;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-family: "Open Sans", sans-serif;
+      }
+
+      .red-social:hover {
+        background: #000;
+        color: #fff;
+        border-color: #000;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="contenedor">
+        <div class="barra">
+          <div class="logofusion">
+            <img src="/img/logofusion.jpg" alt="logofusion" />
+          </div>
+          <nav class="navegacion">
+            <a href="nosotros.html" class="navegacion__enlace">Nosotros</a>
+            <a href="servicios.html" class="navegacion__enlace">Servicios</a>
+            <a href="productos.html" class="navegacion__enlace">Productos</a>
+            <a
+              href="turnos.html"
+              class="navegacion__enlace nav-turno-btn activo"
+              >Reservar turno</a
+            >
+            <a href="contacto.html" class="navegacion__enlace">Contacto</a>
+          </nav>
+        </div>
+        <div id="carrito-icono" class="carrito-icono">
+          <img
+            src="https://img.icons8.com/ios/452/shopping-cart.png"
+            alt="Carrito"
+          />
+          <span id="contador-carrito" class="contador-carrito">0</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="contenedor">
+        <section class="contacto-seccion">
+          <h2>Contacto</h2>
+          <p class="contacto-subtitulo">
+            ¿Tenés alguna pregunta? Escribinos y te respondemos a la brevedad.
+          </p>
+
+          <div class="contacto-grid">
+            <!-- Formulario -->
+            <div class="formulario-contacto">
+              <div class="form-group">
+                <label for="nombre">Nombre completo *</label>
+                <input
+                  type="text"
+                  id="nombre"
+                  name="nombre"
+                  placeholder="Tu nombre"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="email">Correo electrónico *</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  placeholder="tucorreo@ejemplo.com"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="telefono">Teléfono (opcional)</label>
+                <input
+                  type="tel"
+                  id="telefono"
+                  name="telefono"
+                  placeholder="Ej: 11 1234-5678"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="asunto">Asunto *</label>
+                <select id="asunto" name="asunto" required>
+                  <option value="" disabled selected>Seleccioná un tema</option>
+                  <option value="turno">Reserva de turno</option>
+                  <option value="producto">Consulta sobre productos</option>
+                  <option value="precio">Consulta de precios</option>
+                  <option value="otro">Otro</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="mensaje">Mensaje *</label>
+                <textarea
+                  id="mensaje"
+                  name="mensaje"
+                  placeholder="Escribí tu mensaje acá..."
+                  required
+                ></textarea>
+              </div>
+
+              <button class="btn-enviar" onclick="enviarFormulario()">
+                Enviar mensaje
+              </button>
+
+              <div class="mensaje-exito" id="mensaje-exito">
+                ✅ ¡Mensaje enviado! Te contactaremos pronto.
+              </div>
+            </div>
+
+            <!-- Info de contacto -->
+            <div class="info-contacto">
+              <h3>Visitanos</h3>
+              <p>
+                Estamos para ayudarte. Podés contactarnos por cualquiera de
+                estos medios o venir directamente al local.
+              </p>
+
+              <div class="info-item">
+                <div class="info-item__icono">📍</div>
+                <div class="info-item__texto">
+                  <strong>Dirección</strong>
+                  José Maria Paz 1612, San Miguel<br />Buenos Aires, Argentina
+                </div>
+              </div>
+
+              <div class="info-item">
+                <div class="info-item__icono">📞</div>
+                <div class="info-item__texto">
+                  <strong>Teléfono</strong>
+                  (011) 7266-8263
+                </div>
+              </div>
+
+              <div class="info-item">
+                <div class="info-item__icono">✉️</div>
+                <div class="info-item__texto">
+                  <strong>Email</strong>
+                  fusion.pelu@gmail.com
+                </div>
+              </div>
+
+              <div class="info-item">
+                <div class="info-item__icono">🕐</div>
+                <div class="info-item__texto">
+                  <strong>Horarios</strong>
+                  Martes a Sábados: 10:00 - 18:00<br />
+                </div>
+              </div>
+
+              <div class="redes-sociales">
+                <h4>Seguinos en redes</h4>
+                <div class="redes-lista">
+                  <a
+                    href="https://www.instagram.com/fusion.pelu"
+                    class="red-social"
+                    >📸 Instagram</a
+                  >
+                  <a href="#" class="red-social">💬 WhatsApp</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <footer class="footer">
+        <div class="">
+          <div class="barra2">
+            <h1 class="logo__nombre no-margin centrar-texto">
+              Fusión<span class="logo__bold">Peluquería</span>
+            </h1>
+          </div>
+        </div>
+        <h4>
+          © 2024 Fusión Peluquería. Todos Los Derechos Reservados. All Rights
+          Reserved.
+        </h4>
+      </footer>
+    </main>
+
+    <script>
+      function enviarFormulario() {
+        const nombre = document.getElementById("nombre").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const asunto = document.getElementById("asunto").value;
+        const mensaje = document.getElementById("mensaje").value.trim();
+
+        if (!nombre || !email || !asunto || !mensaje) {
+          alert("Por favor completá todos los campos obligatorios (*).");
+          return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          alert("Por favor ingresá un correo electrónico válido.");
+          return;
+        }
+
+        // Acá iría la lógica real de envío (fetch a un backend, EmailJS, etc.)
+        // Por ahora mostramos el mensaje de éxito y limpiamos el form
+        document.getElementById("mensaje-exito").style.display = "block";
+        document.getElementById("nombre").value = "";
+        document.getElementById("email").value = "";
+        document.getElementById("telefono").value = "";
+        document.getElementById("asunto").value = "";
+        document.getElementById("mensaje").value = "";
+
+        setTimeout(() => {
+          document.getElementById("mensaje-exito").style.display = "none";
+        }, 5000);
+      }
+    </script>
+  </body>
+</html>

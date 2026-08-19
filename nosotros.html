@@ -1,0 +1,1230 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nosotros - Fusión Peluquería</title>
+    <link rel="stylesheet" href="/style/style.css" />
+    <link rel="preload" href="css/normalize.css" as="style" />
+    <link rel="stylesheet" href="css/normalize.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;1,400&family=PT+Sans:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+
+    <style>
+      /* ══════════════════════════════════════
+           VARIABLES
+        ══════════════════════════════════════ */
+      :root {
+        --negro: #111;
+        --blanco: #fafaf8;
+        --rosa: #f8d470;
+        --rosa-oscuro: #94fcea;
+        --gris: #f4f4f2;
+        --gris-texto: #666;
+      }
+
+      /* ══════════════════════════════════════
+           HERO NOSOTROS
+        ══════════════════════════════════════ */
+      .nosotros-hero {
+        background-color: var(--negro);
+        color: white;
+        padding: 10rem 0 8rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .nosotros-hero::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 60rem;
+        height: 60rem;
+        background: radial-gradient(
+          circle,
+          rgba(232, 196, 212, 0.15) 0%,
+          transparent 70%
+        );
+        pointer-events: none;
+      }
+
+      .nosotros-hero::after {
+        content: '"';
+        position: absolute;
+        bottom: -4rem;
+        left: 2rem;
+        font-family: "Playfair Display", serif;
+        font-size: 30rem;
+        color: rgba(255, 255, 255, 0.03);
+        line-height: 1;
+        pointer-events: none;
+      }
+
+      .hero-badge {
+        display: inline-block;
+        background: var(--rosa);
+        color: var(--negro);
+        font-size: 1.2rem;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        padding: 0.6rem 1.8rem;
+        border-radius: 50px;
+        margin-bottom: 2.5rem;
+        font-family: "Open Sans", sans-serif;
+      }
+
+      .nosotros-hero h1 {
+        font-family: "Playfair Display", serif;
+        font-size: clamp(3.5rem, 6vw, 7rem);
+        font-weight: 700;
+        color: white;
+        text-align: left;
+        line-height: 1.1;
+        margin-bottom: 2.5rem;
+        display: block;
+        justify-content: unset;
+        align-items: unset;
+      }
+
+      .nosotros-hero h1 em {
+        font-style: italic;
+        color: var(--rosa);
+      }
+
+      .nosotros-hero p {
+        font-size: 1.8rem;
+        color: rgba(255, 255, 255, 0.7);
+        max-width: 55rem;
+        line-height: 1.8;
+      }
+
+      /* ══════════════════════════════════════
+           NÚMEROS / STATS
+        ══════════════════════════════════════ */
+      .stats-banda {
+        background: var(--rosa);
+        padding: 5rem 0;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2rem;
+        text-align: center;
+      }
+
+      @media (max-width: 768px) {
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 3rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      .stat-numero {
+        font-family: "Playfair Display", serif;
+        font-size: 5rem;
+        font-weight: 700;
+        color: var(--negro);
+        line-height: 1;
+        display: block;
+      }
+
+      .stat-label {
+        font-family: "Open Sans", sans-serif;
+        font-size: 1.3rem;
+        color: #444;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-top: 0.5rem;
+        display: block;
+      }
+
+      /* ══════════════════════════════════════
+           HISTORIA
+        ══════════════════════════════════════ */
+      .historia-seccion {
+        padding: 10rem 0;
+        background: var(--blanco);
+      }
+
+      .historia-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8rem;
+        align-items: center;
+      }
+
+      @media (max-width: 768px) {
+        .historia-grid {
+          grid-template-columns: 1fr;
+          gap: 4rem;
+        }
+      }
+
+      .historia-texto h2 {
+        font-family: "Playfair Display", serif;
+        text-align: left;
+        font-size: 4rem;
+        padding: 0 0 2rem;
+        color: var(--negro);
+        line-height: 1.2;
+      }
+
+      .historia-texto h2 span {
+        color: var(--rosa-oscuro);
+      }
+
+      .historia-texto p {
+        font-size: 1.6rem;
+        color: var(--gris-texto);
+        line-height: 1.9;
+        margin-bottom: 2rem;
+      }
+
+      .historia-texto p strong {
+        color: var(--negro);
+      }
+
+      /* Decoración visual lado derecho */
+      .historia-visual {
+        position: relative;
+      }
+
+      .historia-card-decorativa {
+        background: var(--negro);
+        color: white;
+        border-radius: 20px;
+        padding: 5rem 4rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .historia-card-decorativa::before {
+        content: "";
+        position: absolute;
+        top: -3rem;
+        right: -3rem;
+        width: 15rem;
+        height: 15rem;
+        background: var(--rosa);
+        border-radius: 50%;
+        opacity: 0.2;
+      }
+
+      .historia-card-decorativa blockquote {
+        font-family: "Playfair Display", serif;
+        font-style: italic;
+        font-size: 2.2rem;
+        line-height: 1.6;
+        color: white;
+        margin: 0 0 3rem;
+        position: relative;
+        z-index: 1;
+      }
+
+      .historia-card-decorativa blockquote::before {
+        content: '"';
+        font-size: 8rem;
+        color: var(--rosa);
+        line-height: 0;
+        display: block;
+        margin-bottom: 2rem;
+        font-style: normal;
+      }
+
+      .historia-card-firma {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+      }
+
+      .firma-linea {
+        width: 4rem;
+        height: 2px;
+        background: var(--rosa);
+      }
+
+      .firma-texto {
+        font-size: 1.4rem;
+        color: rgba(255, 255, 255, 0.7);
+        font-family: "Open Sans", sans-serif;
+        letter-spacing: 0.05em;
+      }
+
+      /* Año flotante */
+      .anno-badge {
+        position: absolute;
+        top: -2rem;
+        right: 3rem;
+        background: var(--rosa);
+        color: var(--negro);
+        font-family: "Playfair Display", serif;
+        font-size: 1.6rem;
+        font-weight: 700;
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      /* ══════════════════════════════════════
+           EQUIPO
+        ══════════════════════════════════════ */
+      .equipo-seccion {
+        padding: 10rem 0;
+        background: var(--negro);
+      }
+
+      .seccion-titulo {
+        text-align: center;
+        margin-bottom: 6rem;
+      }
+
+      .seccion-titulo .subtag {
+        display: inline-block;
+        font-size: 1.2rem;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--rosa-oscuro);
+        margin-bottom: 1rem;
+        font-family: "Open Sans", sans-serif;
+      }
+
+      .seccion-titulo h2 {
+        font-family: "Playfair Display", serif;
+        font-size: 4rem;
+        padding: 0;
+        color: var(--blanco);
+      }
+
+      .equipo-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 6fr);
+        gap: 3rem;
+        margin: 2rem;
+      }
+
+      @media (max-width: 768px) {
+        .equipo-grid {
+          grid-template-columns: 6fr;
+          max-width: 40rem;
+          margin: 0 auto;
+        }
+      }
+
+      .equipo-card {
+        background: var(--rosa);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
+      }
+
+      .equipo-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
+      }
+
+      .equipo-card__foto {
+        height: 22rem;
+        background: var(--rosa);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 7rem;
+        
+        overflow: hidden;
+      }
+
+      .equipo-card__foto::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 40%;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.15), transparent);
+      }
+
+      .equipo-card__info {
+        padding: 2.5rem;
+      }
+
+      .equipo-card__nombre {
+        font-family: "Playfair Display", serif;
+        font-size: 2.2rem;
+        color: var(--negro);
+        margin-bottom: 0.4rem;
+      }
+
+      .equipo-card__rol {
+        font-size: 1.3rem;
+        color: var(--blanco);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-family: "Open Sans", sans-serif;
+        margin-bottom: 1.5rem;
+      }
+
+      .equipo-card__especialidades {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+      }
+
+      .tag-esp {
+        background: var(--gris);
+        color: #444;
+        font-size: 1.2rem;
+        padding: 0.4rem 1.2rem;
+        border-radius: 50px;
+        font-family: "Open Sans", sans-serif;
+      }
+
+      /* ══════════════════════════════════════
+           SERVICIOS
+        ══════════════════════════════════════ */
+      .servicios-seccion {
+        padding: 10rem 0;
+        background: var(--blanco);
+      }
+
+      .servicios-lista {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2rem;
+        margin-top: 2rem;
+      }
+
+      @media (max-width: 900px) {
+        .servicios-lista {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+
+      @media (max-width: 600px) {
+        .servicios-lista {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      .servicio-item {
+        background: var(--gris);
+        border-radius: 14px;
+        padding: 3rem 2rem;
+        text-align: center;
+        transition:
+          background 0.3s ease,
+          transform 0.3s ease;
+        cursor: default;
+      }
+
+      .servicio-item:hover {
+        background: var(--negro);
+        transform: translateY(-4px);
+      }
+
+      .servicio-item:hover .servicio-nombre {
+        color: white;
+      }
+
+      .servicio-item:hover .servicio-icono {
+        transform: scale(1.2);
+      }
+
+      .servicio-icono {
+        font-size: 3.5rem;
+        display: block;
+        margin-bottom: 1.2rem;
+        transition: transform 0.3s ease;
+      }
+
+      .servicio-nombre {
+        font-family: "PT Sans", sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--negro);
+        transition: color 0.3s ease;
+      }
+
+      /* ══════════════════════════════════════
+           VALORES
+        ══════════════════════════════════════ */
+      .valores-seccion {
+        padding: 10rem 0;
+        background: var(--negro);
+        color: white;
+      }
+
+      .valores-seccion .seccion-titulo h2 {
+        color: white;
+      }
+
+      .valores-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 3rem;
+      }
+
+      @media (max-width: 768px) {
+        .valores-grid {
+          grid-template-columns: 1fr;
+          max-width: 45rem;
+          margin: 0 auto;
+        }
+      }
+
+      .valor-card {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 4rem 3rem;
+        transition:
+          border-color 0.3s ease,
+          background 0.3s ease;
+      }
+
+      .valor-card:hover {
+        border-color: var(--rosa);
+        background: rgba(232, 196, 212, 0.05);
+      }
+
+      .valor-numero {
+        font-family: "Playfair Display", serif;
+        font-size: 5rem;
+        color: rgba(201, 194, 194, 0.658);
+        line-height: 1;
+        margin-bottom: 1rem;
+      }
+
+      .valor-titulo {
+        font-family: "Playfair Display", serif;
+        font-size: 2.4rem;
+        color: var(--rosa);
+        margin-bottom: 1.5rem;
+      }
+
+      .valor-descripcion {
+        font-size: 1.5rem;
+        color: rgba(255, 255, 255, 0.6);
+        line-height: 1.8;
+      }
+
+      /* ══════════════════════════════════════
+           GOOGLE REVIEWS
+        ══════════════════════════════════════ */
+      .reviews-seccion {
+        padding: 8rem 0;
+        background: var(--rosa);
+      }
+
+      .reviews-seccion .seccion-titulo h2 {
+        color: var(--negro);
+      }
+
+      .estrellas-grande {
+        font-size: 3rem;
+        letter-spacing: 0.2rem;
+        display: block;
+        text-align: center;
+        margin-bottom: 1rem;
+      }
+
+      .reviews-puntaje {
+        text-align: center;
+        margin-bottom: 5rem;
+      }
+
+      .puntaje-numero {
+        font-family: "Playfair Display", serif;
+        font-size: 7rem;
+        color: var(--negro);
+        line-height: 1;
+        display: block;
+      }
+
+      .puntaje-texto {
+        font-size: 1.4rem;
+        color: #555;
+        font-family: "Open Sans", sans-serif;
+      }
+
+      .reviews-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2.5rem;
+      }
+
+      @media (max-width: 768px) {
+        .reviews-grid {
+          grid-template-columns: 1fr;
+          max-width: 45rem;
+          margin: 0 auto;
+        }
+      }
+
+      .review-card {
+        background: white;
+        border-radius: 14px;
+        padding: 3rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+      }
+
+      .review-estrellas {
+        font-size: 1.6rem;
+        margin-bottom: 1.5rem;
+        letter-spacing: 0.1rem;
+      }
+
+      .review-texto {
+        font-size: 1.5rem;
+        color: #444;
+        line-height: 1.7;
+        font-style: italic;
+        margin-bottom: 2rem;
+      }
+
+      .review-autor {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--negro);
+        font-family: "PT Sans", sans-serif;
+      }
+
+      .review-google {
+        font-size: 1.2rem;
+        color: #999;
+        font-family: "Open Sans", sans-serif;
+      }
+
+      /* ══════════════════════════════════════
+           UBICACION
+        ══════════════════════════════════════ */
+      .ubicacion-seccion {
+        padding: 8rem 0;
+        background: var(--blanco);
+      }
+
+      .ubicacion-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr;
+        gap: 6rem;
+        align-items: center;
+      }
+
+      @media (max-width: 768px) {
+        .ubicacion-grid {
+          grid-template-columns: 1fr;
+          gap: 4rem;
+        }
+      }
+
+      .ubicacion-info h3 {
+        font-family: "Playfair Display", serif;
+        font-size: 3.2rem;
+        text-align: left;
+        color: var(--negro);
+        margin-bottom: 2rem;
+        padding: 0;
+      }
+
+      .ubicacion-dato {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        font-size: 1.5rem;
+        color: var(--gris-texto);
+        line-height: 1.6;
+      }
+
+      .ubicacion-dato span:first-child {
+        font-size: 2rem;
+        flex-shrink: 0;
+      }
+
+      .mapa-container {
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        height: 35rem;
+        background: var(--gris);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 1.5rem;
+        color: var(--gris-texto);
+        font-size: 1.5rem;
+        font-family: "Open Sans", sans-serif;
+        border: 2px dashed #ddd;
+      }
+
+      .mapa-container p {
+        text-align: center;
+        padding: 0 3rem;
+      }
+
+      .mapa-container .mapa-icono {
+        font-size: 4rem;
+      }
+
+      .btn-maps {
+        display: inline-flex;
+        align-items: center;
+        gap: 1rem;
+        background: var(--negro);
+        color: white;
+        padding: 1.4rem 3rem;
+        border-radius: 50px;
+        font-size: 1.5rem;
+        font-family: "PT Sans", sans-serif;
+        font-weight: 700;
+        text-decoration: none;
+        transition:
+          background 0.3s ease,
+          transform 0.2s ease;
+        margin-top: 1rem;
+        display: inline-flex;
+      }
+
+      .btn-maps:hover {
+        background: #333;
+        transform: translateY(-2px);
+      }
+
+      /* ══════════════════════════════════════
+           ANIMACIONES DE ENTRADA
+        ══════════════════════════════════════ */
+      .fade-in {
+        opacity: 0;
+        transform: translateY(30px);
+        transition:
+          opacity 0.7s ease,
+          transform 0.7s ease;
+      }
+
+      .fade-in.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .fade-in-delay-1 {
+        transition-delay: 0.1s;
+      }
+      .fade-in-delay-2 {
+        transition-delay: 0.2s;
+      }
+      .fade-in-delay-3 {
+        transition-delay: 0.3s;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="contenedor">
+        <div class="barra">
+          <div class="logofusion">
+            <img src="/img/logofusion.jpg" alt="logofusion" />
+          </div>
+          <nav class="navegacion">
+            <a href="nosotros.html" class="navegacion__enlace">Nosotros</a>
+            <a href="servicios.html" class="navegacion__enlace">Servicios</a>
+            <a href="productos.html" class="navegacion__enlace">Productos</a>
+            <a
+              href="turnos.html"
+              class="navegacion__enlace nav-turno-btn activo"
+              >Reservar turno</a
+            >
+            <a href="contacto.html" class="navegacion__enlace">Contacto</a>
+          </nav>
+        </div>
+        <div id="carrito-icono" class="carrito-icono">
+          <img
+            src="https://img.icons8.com/ios/452/shopping-cart.png"
+            alt="Carrito"
+          />
+          <span id="contador-carrito" class="contador-carrito">0</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- ── HERO ── -->
+      <section class="nosotros-hero">
+        <div class="contenedor">
+          <span class="hero-badge">✦ San Miguel, Buenos Aires</span>
+          <h1>Donde la belleza<br />es <em>cosa de familia</em></h1>
+          <p>
+            Hace 15 años que transformamos cabellos y conquistamos confianzas en
+            cada rincón de San Miguel.
+          </p>
+        </div>
+      </section>
+
+      <!-- ── STATS ── -->
+      <section class="stats-banda">
+        <div class="contenedor">
+          <div class="stats-grid">
+            <div class="fade-in">
+              <span class="stat-numero">16</span>
+              <span class="stat-label">Años de experiencia</span>
+            </div>
+            <div class="fade-in fade-in-delay-1">
+              <span class="stat-numero">5</span>
+              <span class="stat-label">Estilistas de familia</span>
+            </div>
+            <div class="fade-in fade-in-delay-2">
+              <span class="stat-numero">12</span>
+              <span class="stat-label">Servicios disponibles</span>
+            </div>
+            <div class="fade-in fade-in-delay-3">
+              <span class="stat-numero">⭐4,9</span>
+              <span class="stat-label">Valoración en Google</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── HISTORIA ── -->
+      <section class="historia-seccion">
+        <div class="contenedor">
+          <div class="historia-grid">
+            <div class="historia-texto fade-in">
+              <h2>Una historia de <span>pasión y familia</span></h2>
+              <p>
+                Fusión Peluquería nació hace <strong>16 años</strong> de un
+                sueño compartido entre familia: llevar al barrio de San Miguel
+                un espacio donde cada cliente se sienta especial, cuidado y
+                hermoso.
+              </p>
+              <p>
+                Lo que empezó como un pequeño local familiar hoy es un punto de
+                referencia en la zona, reconocido por su
+                <strong>calidez humana</strong>, la calidad de sus tratamientos
+                y la dedicación de cada una de las integrantes del equipo.
+              </p>
+              <p>
+                Somos un equipo de mujeres — mi mujer y mis cuñadas — unidas por
+                la misma vocación: hacer que cada persona que entra por nuestra
+                puerta salga sintiéndose <strong>mejor de lo que llegó</strong>.
+              </p>
+            </div>
+            <div class="historia-visual fade-in fade-in-delay-1">
+              <span class="anno-badge">Desde 2009 ✦</span>
+              <div class="historia-card-decorativa">
+                <blockquote>
+                  Cada cabello tiene su historia. Nosotras la hacemos brillar.
+                </blockquote>
+                <div class="historia-card-firma">
+                  <div class="firma-linea"></div>
+                  <span class="firma-texto"
+                    >El equipo de Fusión Peluquería</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── EQUIPO ── -->
+      <section class="equipo-seccion">
+        <div class="contenedor">
+          <div class="seccion-titulo fade-in">
+            <span class="subtag">✦ Quiénes somos</span>
+            <h2>El equipo</h2>
+          </div>
+          <div class="equipo-grid">
+            <div class="equipo-card fade-in">
+              <div class="equipo-card__foto">💇‍♀️</div>
+              <div class="equipo-card__info">
+                <p class="equipo-card__nombre">Corte & Estilo</p>
+                <p class="equipo-card__rol">
+                  Cortes personalizados que se adaptan a tu estilo, rostro y
+                  personalidad.
+                </p>
+                <div class="equipo-card__especialidades">
+                  <span class="tag-esp">Corte femenino</span>
+                  <span class="tag-esp">Corte masculino</span>
+                  <span class="tag-esp">Corte infantil</span>
+                  <span class="tag-esp">Brushing</span>
+                  <span class="tag-esp">Planchita</span>
+                </div>
+              </div>
+            </div>
+            <div class="equipo-card fade-in fade-in-delay-1">
+              <div class="equipo-card__foto" style="background: var(--rosa)">
+                💅
+              </div>
+              <div class="equipo-card__info">
+                <p class="equipo-card__nombre">Especialistas en color</p>
+                <p class="equipo-card__rol">
+                  Transformá tu look con colores personalizados y técnicas que
+                  resaltan tu belleza.
+                </p>
+                <div class="equipo-card__especialidades">
+                  <span class="tag-esp">Coloración</span>
+                  <span class="tag-esp">Mechas</span>
+                  <span class="tag-esp">Balayage</span>
+                  <span class="tag-esp">Reflejos</span>
+                  <span class="tag-esp">Corrección de Color</span>
+                </div>
+              </div>
+            </div>
+            <div class="equipo-card fade-in fade-in-delay-2">
+              <div class="equipo-card__foto" style="background: var(--rosa)">
+                <img src="/img/tratamiento.jpg" alt="tratanmiento" />
+              </div>
+              <div class="equipo-card__info">
+                <p class="equipo-card__nombre">Especialistas en tratamientos</p>
+                <p class="equipo-card__rol">
+                  Recuperá la suavidad, hidratación y vitalidad de tu cabello.
+                </p>
+                <div class="equipo-card__especialidades">
+                  <span class="tag-esp">Tratamientos Nutritivos</span>
+                  <span class="tag-esp">Extensiones</span>
+                  <span class="tag-esp">Depilación</span>
+                  <span class="tag-esp">Keratina</span>
+                  <span class="tag-esp">Botox Capilar</span>
+                  <span class="tag-esp">Alisados</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="equipo-grid">
+            <div class="equipo-card fade-in">
+              <div class="equipo-card__foto">💇‍♀️</div>
+              <div class="equipo-card__info">
+                <p class="equipo-card__nombre">Manos & Pies</p>
+                <p class="equipo-card__rol">
+                  Un momento para cuidar tus manos y pies y completar tu look.
+                </p>
+                <div class="equipo-card__especialidades">
+                  <span class="tag-esp">Manicuría</span>
+                  <span class="tag-esp">Belleza de pies</span>
+                  <span class="tag-esp">Cuidado de uñas</span>
+                 
+                </div>
+              </div>
+            </div>
+            <div class="equipo-card fade-in fade-in-delay-1">
+              <div class="equipo-card__foto" style="background: var(--rosa)">
+                💅
+              </div>
+              <div class="equipo-card__info">
+                <p class="equipo-card__nombre">Depilación</p>
+                <p class="equipo-card__rol">
+                  Cuidado y suavidad para una piel que se siente increíble.
+                </p>
+                <div class="equipo-card__especialidades">
+                  <span class="tag-esp">Depilación Facial</span>
+                  <span class="tag-esp">Depilación Corporal</span>
+                  <span class="tag-esp">Axilas</span>
+                  <span class="tag-esp">Piernas</span>
+                  <span class="tag-esp">Brazos</span>
+                </div>
+              </div>
+            </div>
+            <div class="equipo-card fade-in fade-in-delay-2">
+              <div class="equipo-card__foto" style="background: var(--rosa)">
+                <img src="/img/tratamiento.jpg" alt="tratanmiento" />
+              </div>
+              <div class="equipo-card__info">
+                <p class="equipo-card__nombre">Peinados</p>
+                <p class="equipo-card__rol">
+                  Looks especiales para acompañarte en tus momentos más importantes.
+                </p>
+                <div class="equipo-card__especialidades">
+                  <span class="tag-esp">Peinados sociales</span>
+                  <span class="tag-esp">Peinados para eventos</span>
+                  <span class="tag-esp">Peinados de fiestas</span>
+                  <span class="tag-esp">Brushing</span>
+                  <span class="tag-esp">Planchita</span>
+                  
+                </div>
+              </div>
+            </div>
+          </div>
+          <p
+            style="
+              text-align: center;
+              margin-top: 3rem;
+              font-size: 1.4rem;
+              color: #999;
+              font-style: italic;
+            "
+          >
+         
+          </p>
+        </div>
+      </section>
+
+
+      <!-- ── VALORES ── -->
+      <section class="valores-seccion">
+        <div class="contenedor">
+          <div class="seccion-titulo fade-in">
+            <span class="subtag" style="color: var(--rosa)"
+              >✦ En lo que creemos</span
+            >
+            <h2>Nuestros valores</h2>
+          </div>
+          <div class="valores-grid">
+            <div class="valor-card fade-in">
+              <div class="valor-numero">01</div>
+              <div class="valor-titulo">Familia primero</div>
+              <p class="valor-descripcion">
+                Somos un equipo unido por algo más que trabajo. Esa energía
+                familiar se siente en cada atención, en cada detalle, en cada
+                sonrisa.
+              </p>
+            </div>
+            <div class="valor-card fade-in fade-in-delay-1">
+              <div class="valor-numero">02</div>
+              <div class="valor-titulo">Calidad sin compromiso</div>
+              <p class="valor-descripcion">
+                Usamos los mejores productos del mercado y nos capacitamos
+                constantemente para traerte las técnicas más actuales.
+              </p>
+            </div>
+            <div class="valor-card fade-in fade-in-delay-2">
+              <div class="valor-numero">03</div>
+              <div class="valor-titulo">Tu confianza, nuestra meta</div>
+              <p class="valor-descripcion">
+                Después de 15 años, nuestro mayor orgullo sigue siendo la misma
+                clienta que vuelve, y la que nos recomienda a su familia.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── REVIEWS ── -->
+      <section class="reviews-seccion">
+        <div class="contenedor">
+          <div class="seccion-titulo fade-in">
+            <span class="subtag">✦ Lo que dicen nuestras clientas</span>
+            <h2>Valoración en Google</h2>
+          </div>
+          <div class="reviews-puntaje fade-in">
+            <span class="estrellas-grande">⭐⭐⭐⭐⭐</span>
+            <span class="puntaje-numero">4,9</span>
+            <span class="puntaje-texto"
+              >Valoración promedio en Google Maps · San Miguel</span
+            >
+          </div>
+          <div class="reviews-grid">
+            <div class="review-card fade-in">
+              <div class="review-estrellas">⭐⭐⭐⭐⭐</div>
+              <p class="review-texto">
+                Me atendieron de maravilla, el resultado del balayage superó
+                todas mis expectativas. Un equipo increíble, con mucha
+                dedicación y profesionalismo.
+              </p>
+              <p class="review-autor">María L.</p>
+              <p class="review-google">Reseña de Google Maps</p>
+            </div>
+            <div class="review-card fade-in fade-in-delay-1">
+              <div class="review-estrellas">⭐⭐⭐⭐⭐</div>
+              <p class="review-texto">
+                Llevo años yendo y nunca me decepcionaron. La keratina me duró
+                meses y el trato es como ir a lo de una amiga. ¡Las recomiendo
+                siempre!
+              </p>
+              <p class="review-autor">Claudia R.</p>
+              <p class="review-google">Reseña de Google Maps</p>
+            </div>
+            <div class="review-card fade-in fade-in-delay-2">
+              <div class="review-estrellas">⭐⭐⭐⭐⭐</div>
+              <p class="review-texto">
+                El mejor lugar de San Miguel sin dudas. Me hicieron las
+                extensiones y quedaron perfectas. El equipo es muy cálido y
+                profesional a la vez.
+              </p>
+              <p class="review-autor">Valeria M.</p>
+              <p class="review-google">Reseña de Google Maps</p>
+            </div>
+          </div>
+          <p
+            style="
+              text-align: center;
+              margin-top: 3rem;
+              font-size: 1.4rem;
+              color: #666;
+              font-style: italic;
+            "
+          >
+            * Reemplazá estas reseñas con las reales de tu Google Maps
+          </p>
+        </div>
+      </section>
+
+      <!-- ── UBICACIÓN ── -->
+      <section class="ubicacion-seccion">
+        <div class="contenedor">
+          <div class="ubicacion-grid">
+            <div class="ubicacion-info fade-in">
+              <h3>Encontranos en San Miguel</h3>
+              <div class="ubicacion-dato">
+                <span>📍</span>
+                <span
+                  >Tu dirección exacta acá,<br />San Miguel, Buenos Aires</span
+                >
+              </div>
+              <div class="ubicacion-dato">
+                <span>🕐</span>
+                <span
+                  >Lunes a Viernes: 9:00 - 19:00<br />Sábados: 9:00 -
+                  17:00</span
+                >
+              </div>
+              <div class="ubicacion-dato">
+                <span>📞</span>
+                <span>(011) 1234-5678</span>
+              </div>
+              <a
+                href="https://maps.google.com"
+                target="_blank"
+                class="btn-maps"
+              >
+                📍 Ver en Google Maps
+              </a>
+            </div>
+            <div class="mapa-container fade-in fade-in-delay-1">
+              <span class="mapa-icono">🗺️</span>
+              <p>
+                Para agregar el mapa real, reemplazá este div con el código
+                embed de Google Maps de tu local.
+              </p>
+              <small style="color: #aaa; font-size: 1.2rem"
+                >Google Maps → Compartir → Insertar mapa → Copiar HTML</small
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer-pro">
+        <div class="contenedor">
+          <div class="footer-grid">
+            <!-- Columna 1: Marca -->
+            <div class="footer-marca">
+              <span class="footer-marca__logo"
+                >Fusión<span>Peluquería</span></span
+              >
+              <p class="footer-marca__desc">
+                15 años transformando cabellos y conquistando confianzas en San
+                Miguel, Buenos Aires. Un equipo de familia para vos.
+              </p>
+              <div class="footer-redes">
+                <a href="#" class="footer-red" title="Instagram">📸</a>
+                <a href="#" class="footer-red" title="WhatsApp">💬</a>
+                <a href="#" class="footer-red" title="Facebook">📘</a>
+              </div>
+            </div>
+
+            <!-- Columna 2: Navegación -->
+            <div class="footer-col">
+              <h4>Páginas</h4>
+              <ul>
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="nosotros.html">Nosotros</a></li>
+                <li><a href="productos.html">Productos</a></li>
+                <li><a href="contacto.html">Contacto</a></li>
+              </ul>
+            </div>
+
+            <!-- Columna 3: Servicios -->
+            <div class="footer-col">
+              <h4>Servicios</h4>
+              <ul>
+                <li><a href="index.html">Corte & Peinado</a></li>
+                <li><a href="index.html">Coloración & Mechas</a></li>
+                <li><a href="index.html">Balayage</a></li>
+                <li><a href="index.html">Keratina & Alisados</a></li>
+                <li><a href="index.html">Botox Capilar</a></li>
+                <li><a href="index.html">Manicuría</a></li>
+                <li><a href="index.html">Depilación</a></li>
+              </ul>
+            </div>
+
+            <!-- Columna 4: Contacto -->
+            <div class="footer-contacto">
+              <h4>Contacto</h4>
+              <div class="footer-contacto-item">
+                <span class="footer-contacto-item__icono">📍</span>
+                <span class="footer-contacto-item__texto"
+                  >José María Paz 1612,<br />San Miguel, Buenos Aires</span
+                >
+              </div>
+              <div class="footer-contacto-item">
+                <span class="footer-contacto-item__icono">📞</span>
+                <span class="footer-contacto-item__texto">
+                  <a href="tel:+541112345678">(011) 1234-5678</a>
+                </span>
+              </div>
+              <div class="footer-contacto-item">
+                <span class="footer-contacto-item__icono">🕐</span>
+                <span class="footer-contacto-item__texto">
+                  Lun–Vie: 9:00–19:00<br />Sáb: 9:00–17:00
+                </span>
+              </div>
+              <div class="footer-contacto-item">
+                <span class="footer-contacto-item__icono">✉️</span>
+                <span class="footer-contacto-item__texto">
+                  <a href="mailto:fusionpeluqueria@email.com"
+                    >fusionpeluqueria@email.com</a
+                  >
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Franja inferior -->
+          <div class="footer-bottom">
+            <p class="footer-bottom__copy">
+              © 2024 Fusión Peluquería · Todos los derechos reservados
+            </p>
+            <div class="footer-bottom__links">
+              <a href="#">Política de privacidad</a>
+              <a href="contacto.html">Contacto</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </main>
+
+    <script>
+      // Animación de aparición al hacer scroll
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("visible");
+            }
+          });
+        },
+        { threshold: 0.15 },
+      );
+
+      document
+        .querySelectorAll(".fade-in")
+        .forEach((el) => observer.observe(el));
+    </script>
+  </body>
+</html>

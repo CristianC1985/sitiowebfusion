@@ -1,0 +1,1 @@
+* Este sitio va a tratar de mi negocio de Peluquería, voy a contar un poco de nuestra historia, de los servicios que ofrecemos y de los productos que vendemos.
