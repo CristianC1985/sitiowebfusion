@@ -1154,4 +1154,9 @@ button:hover {
             background: linear-gradient(90deg, transparent, #fbf067, #f1d83c, #e3ce20, transparent);
         }
 
+        .logo-whatsapp {
+          width: 2rem;
+          height: 2rem;
+        }
+
       
