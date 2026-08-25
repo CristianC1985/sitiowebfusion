@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "nombre": "Shampoo Hidratante",
+    "descripcion": "Shampoo profesional para cabello seco y dañado.",
+    "precio": 3500,
+    "categoria": "Shampoo",
+    "imagen": "img/productos/shampoo-hidratante.jpg"
+  },
+  {
+    "id": 2,
+    "nombre": "Acondicionador Reparador",
+    "descripcion": "Acondicionador de uso profesional para todo tipo de cabello.",
+    "precio": 3200,
+    "categoria": "Acondicionador",
+    "imagen": "img/productos/acondicionador.jpg"
+  },
+  {
+    "id": 3,
+    "nombre": "Mascarilla Nutritiva",
+    "descripcion": "Tratamiento intensivo de nutrición y brillo.",
+    "precio": 4800,
+    "categoria": "Tratamiento",
+    "imagen": "img/productos/mascarilla.jpg"
+  },
+  {
+    "id": 4,
+    "nombre": "Sérum Antifrizz",
+    "descripcion": "Sérum liviano para controlar el frizz y aportar brillo.",
+    "precio": 5200,
+    "categoria": "Tratamiento",
+    "imagen": "img/productos/serum.jpg"
+  },
+  {
+    "id": 5,
+    "nombre": "Aceite Capilar",
+    "descripcion": "Aceite nutritivo para puntas y largos.",
+    "precio": 4100,
+    "categoria": "Tratamiento",
+    "imagen": "img/productos/aceite.jpg"
+  },
+  {
+    "id": 6,
+    "nombre": "Esmalte Semipermanente",
+    "descripcion": "Esmalte de larga duración para manicuría.",
+    "precio": 2800,
+    "categoria": "Manicura",
+    "imagen": "img/productos/esmalte.jpg"
+  }
+]

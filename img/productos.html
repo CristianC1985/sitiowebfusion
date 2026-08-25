@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos - Fusión Peluquería</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ══════════════════════════════
+           PRODUCTOS
+        ══════════════════════════════ */
+        .productos-hero {
+            text-align: center;
+            padding: 60px 20px 20px;
+            background: #faf9f7;
+        }
+        .productos-hero h1 {
+            font-family: 'PT Sans', sans-serif;
+            font-size: 2.8rem;
+            color: #2c2c2c;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .productos-hero p { color: #777; margin: 0 auto; max-width: 480px; }
+
+        /* Filtros */
+        .filtros-productos {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 24px 20px;
+            background: #faf9f7;
+        }
+        .filtro-btn {
+            padding: 8px 22px;
+            border: 1.5px solid #2c2c2c;
+            background: transparent;
+            font-family: 'PT Sans', sans-serif;
+            font-size: 0.82rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.22s;
+            color: #2c2c2c;
+        }
+        .filtro-btn:hover, .filtro-btn.activo {
+            background: #2c2c2c; color: #fff;
+        }
+
+        /* Grid de productos */
+        .productos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 24px;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 10px 30px 60px;
+        }
+        @media (max-width: 600px) {
+            .productos-grid { padding: 10px 16px 40px; gap: 16px; }
+            .productos-hero h1 { font-size: 2rem; }
+        }
+
+        .producto-card {
+            background: #fff;
+            border: 1.5px solid #eee;
+            display: flex;
+            flex-direction: column;
+            transition: box-shadow 0.25s, border-color 0.25s;
+        }
+        .producto-card:hover {
+            box-shadow: 0 8px 28px rgba(0,0,0,0.09);
+            border-color: #ccc;
+        }
+        .producto-card img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            display: block;
+            background: #f0eeeb;
+        }
+        .producto-info {
+            padding: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .producto-categoria {
+            font-family: 'PT Sans', sans-serif;
+            font-size: 0.72rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #aaa;
+            margin-bottom: 4px;
+        }
+        .producto-nombre {
+            font-family: 'PT Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #2c2c2c;
+            margin: 0 0 6px;
+        }
+        .producto-descripcion {
+            font-size: 0.85rem;
+            color: #777;
+            flex: 1;
+            margin: 0 0 14px;
+            line-height: 1.5;
+        }
+        .producto-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .producto-precio {
+            font-family: 'PT Sans', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #2c2c2c;
+        }
+        .btn-agregar {
+            padding: 9px 18px;
+            background: #2c2c2c;
+            color: #fff;
+            border: none;
+            font-family: 'PT Sans', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.22s;
+            white-space: nowrap;
+        }
+        .btn-agregar:hover { background: #555; }
+        .btn-agregar.agregado { background: #4caf50; }
+
+        /* ══════════════════════════════
+           CARRITO FLOTANTE
+        ══════════════════════════════ */
+        .carrito-flotante {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            z-index: 500;
+            cursor: pointer;
+        }
+        .carrito-btn-flotante {
+            background: #2c2c2c;
+            color: #fff;
+            border: none;
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            position: relative;
+            transition: background 0.22s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .carrito-btn-flotante:hover { background: #444; }
+        .carrito-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #e53935;
+            color: #fff;
+            font-size: 0.72rem;
+            font-family: 'PT Sans', sans-serif;
+            font-weight: 700;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+        }
+        .carrito-badge.oculto { display: none; }
+
+        /* ══════════════════════════════
+           PANEL LATERAL DEL CARRITO
+        ══════════════════════════════ */
+        .carrito-panel {
+            position: fixed;
+            top: 0; right: -420px;
+            width: 400px;
+            max-width: 95vw;
+            height: 100vh;
+            background: #fff;
+            box-shadow: -4px 0 30px rgba(0,0,0,0.15);
+            z-index: 600;
+            display: flex;
+            flex-direction: column;
+            transition: right 0.35s cubic-bezier(.4,0,.2,1);
+        }
+        .carrito-panel.abierto { right: 0; }
+
+        .overlay-carrito {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 590;
+            display: none;
+        }
+        .overlay-carrito.visible { display: block; }
+
+        .carrito-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1.5px solid #eee;
+        }
+        .carrito-header h2 {
+            font-family: 'PT Sans', sans-serif;
+            font-size: 1.1rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #2c2c2c;
+            margin: 0;
+        }
+        .carrito-cerrar {
+            background: none;
+            border: none;
+            font-size: 1.6rem;
+            cursor: pointer;
+            color: #888;
+            line-height: 1;
+        }
+        .carrito-cerrar:hover { color: #2c2c2c; }
+
+        .carrito-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 24px;
+        }
+        .carrito-vacio {
+            text-align: center;
+            color: #bbb;
+            font-size: 0.9rem;
+            margin-top: 60px;
+        }
+        .carrito-vacio span { font-size: 3rem; display: block; margin-bottom: 12px; }
+
+        .carrito-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .carrito-item img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            background: #f0eeeb;
+            flex-shrink: 0;
+        }
+        .item-info { flex: 1; }
+        .item-nombre {
+            font-family: 'PT Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #2c2c2c;
+            margin-bottom: 4px;
+        }
+        .item-precio { font-size: 0.85rem; color: #777; }
+        .item-controles {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .item-controles button {
+            width: 26px; height: 26px;
+            border: 1.5px solid #ddd;
+            background: #fff;
+            cursor: pointer;
+            font-size: 1rem;
+            line-height: 1;
+            transition: border-color 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .item-controles button:hover { border-color: #2c2c2c; }
+        .item-cantidad { font-size: 0.9rem; min-width: 18px; text-align: center; }
+        .btn-eliminar-item {
+            background: none;
+            border: none;
+            color: #ccc;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0 4px;
+            transition: color 0.2s;
+        }
+        .btn-eliminar-item:hover { color: #e53935; }
+
+        .carrito-footer {
+            padding: 20px 24px;
+            border-top: 1.5px solid #eee;
+        }
+        .carrito-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .carrito-total span:first-child {
+            font-family: 'PT Sans', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #999;
+        }
+        .carrito-total-monto {
+            font-family: 'PT Sans', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2c2c2c;
+        }
+        .btn-checkout {
+            width: 100%;
+            padding: 15px;
+            background: #2c2c2c;
+            color: #fff;
+            border: none;
+            font-family: 'PT Sans', sans-serif;
+            font-size: 0.88rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.22s;
+            margin-bottom: 10px;
+        }
+        .btn-checkout:hover { background: #555; }
+        .btn-vaciar {
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            border: 1.5px solid #ddd;
+            font-family: 'PT Sans', sans-serif;
+            font-size: 0.78rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            color: #aaa;
+            transition: all 0.22s;
+        }
+        .btn-vaciar:hover { border-color: #e53935; color: #e53935; }
+
+        /* ══════════════════════════════
+           MODAL CHECKOUT
+        ══════════════════════════════ */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 700;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.visible { display: flex; }
+
+        .modal {
+            background: #fff;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 36px;
+            position: relative;
+        }
+        @media (max-width: 560px) { .modal { padding: 24px 20px; } }
+
+        .modal-cerrar {
+            position: absolute;
+            top: 16px; right: 20px;
+            background: none; border: none;
+            font-size: 1.6rem; cursor: pointer; color: #aaa;
+        }
+        .modal-cerrar:hover { color: #2c2c2c; }
+
+        .modal h2 {
+            font-family: 'PT Sans', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #2c2c2c;
+            margin: 0 0 24px;
+        }
+
+        /* Resumen en modal */
+        .modal-resumen {
+            background: #faf9f7;
+            padding: 16px;
+            margin-bottom: 24px;
+            font-size: 0.88rem;
+            color: #555;
+        }
+        .modal-resumen-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        .modal-resumen-total {
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+            margin-top: 8px;
+            font-family: 'PT Sans', sans-serif;
+            font-weight: 700;
+            color: #2c2c2c;
+            font-size: 1rem;
+        }
+
+        /* Datos del cliente */
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            font-family: 'PT Sans', sans-serif;
+            font-size: 0.78rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #777;
+            margin-bottom: 6px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid #ddd;
+            background: #faf9f7;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 0.93rem;
+            color: #2c2c2c;
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus { border-color: #2c2c2c; }
+
+        /* Métodos de pago */
+        .metodos-pago {
+            margin-bottom: 20px;
+        }
+        .metodos-pago h3 {
+            font-family: 'PT Sans', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #777;
+            margin: 0 0 12px;
+        }
+        .metodo-opcion {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border: 1.5px solid #ddd;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: border-color 0.2s;
+            position: relative;
+        }
+        .metodo-opcion:hover { border-color: #aaa; }
+        .metodo-opcion.seleccionado { border-color: #2c2c2c; }
+        .metodo-opcion input[type="radio"] { display: none; }
+        .metodo-check {
+            width: 18px; height: 18px;
+            border: 2px solid #ccc;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+        .metodo-opcion.seleccionado .metodo-check {
+            border-color: #2c2c2c;
+            background: #2c2c2c;
+        }
+        .metodo-check::after {
+            content: '';
+            width: 8px; height: 8px;
+            background: #fff;
+            border-radius: 50%;
+            display: none;
+        }
+        .metodo-opcion.seleccionado .metodo-check::after { display: block; }
+        .metodo-texto strong {
+            display: block;
+            font-family: 'PT Sans', sans-serif;
+            font-size: 0.92rem;
+            color: #2c2c2c;
+        }
+        .metodo-texto span { font-size: 0.8rem; color: #999; }
+
+        /* Info transferencia */
+        .info-transferencia {
+            display: none;
+            background: #faf9f7;
+            border: 1.5px solid #eee;
+            padding: 16px;
+            margin-bottom: 20px;
+            font-size: 0.87rem;
+            color: #555;
+            line-height: 1.7;
+        }
+        .info-transferencia.visible { display: block; }
+        .info-transferencia strong { color: #2c2c2c; }
+
+        /* Botón confirmar */
+        .btn-confirmar {
+            width: 100%;
+            padding: 15px;
+            background: #2c2c2c;
+            color: #fff;
+            border: none;
+            font-family: 'PT Sans', sans-serif;
+            font-size: 0.88rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.22s;
+        }
+        .btn-confirmar:hover { background: #555; }
+        .btn-confirmar:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* Confirmación final */
+        .compra-confirmada {
+            display: none;
+            text-align: center;
+            padding: 30px 10px;
+        }
+        .compra-confirmada.visible { display: block; }
+        .compra-confirmada .check-grande { font-size: 3.5rem; margin-bottom: 16px; }
+        .compra-confirmada h3 {
+            font-family: 'PT Sans', sans-serif;
+            font-size: 1.4rem;
+            color: #2c2c2c;
+            margin-bottom: 10px;
+        }
+        .compra-confirmada p { color: #777; margin-bottom: 20px; }
+        .wsp-confirmar {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 13px 24px;
+            background: #25D366;
+            color: #fff;
+            text-decoration: none;
+            font-family: 'PT Sans', sans-serif;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: background 0.22s;
+        }
+        .wsp-confirmar:hover { background: #1ebe5d; }
+    </style>
+</head>
+
+<body>
+
+    <header class="header">
+        <div class="contenedor">
+            <div class="barra">
+                <div class="logofusion">
+                    <img src="/img/logofusion.jpg" alt="logofusion">
+                </div>
+                <nav class="navegacion">
+                    <ul class="nav-list">
+                        <a href="index.html" class="navegacion__enlace">Inicio</a>
+                        <a href="#nosotros" class="navegacion__enlace">Nosotros</a>
+                        <a href="productos.html" class="navegacion__enlace">Productos</a>
+                        <a href="galeria.html" class="navegacion__enlace">Galería</a>
+                        <a href="contacto.html" class="navegacion__enlace">Contacto</a>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <section class="productos-hero">
+        <h1>Productos</h1>
+        <p>Llevate lo mejor de Fusión a tu casa.</p>
+    </section>
+
+    <div class="filtros-productos" id="filtros-productos">
+        <button class="filtro-btn activo" data-cat="Todos">Todos</button>
+    </div>
+
+    <div class="productos-grid" id="productos-grid"></div>
+
+    <!-- Botón flotante carrito -->
+    <div class="carrito-flotante">
+        <button class="carrito-btn-flotante" id="btn-abrir-carrito" title="Ver carrito">
+            🛒
+            <span class="carrito-badge oculto" id="carrito-badge">0</span>
+        </button>
+    </div>
+
+    <!-- Overlay carrito -->
+    <div class="overlay-carrito" id="overlay-carrito"></div>
+
+    <!-- Panel lateral carrito -->
+    <div class="carrito-panel" id="carrito-panel">
+        <div class="carrito-header">
+            <h2>Tu carrito</h2>
+            <button class="carrito-cerrar" id="btn-cerrar-carrito">×</button>
+        </div>
+        <div class="carrito-items" id="carrito-items">
+            <div class="carrito-vacio" id="carrito-vacio">
+                <span>🛒</span>
+                Tu carrito está vacío.
+            </div>
+        </div>
+        <div class="carrito-footer" id="carrito-footer" style="display:none;">
+            <div class="carrito-total">
+                <span>Total</span>
+                <span class="carrito-total-monto" id="carrito-total-monto">$0</span>
+            </div>
+            <button class="btn-checkout" id="btn-checkout">Confirmar pedido</button>
+            <button class="btn-vaciar" id="btn-vaciar">Vaciar carrito</button>
+        </div>
+    </div>
+
+    <!-- Modal Checkout -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal">
+            <button class="modal-cerrar" id="modal-cerrar">×</button>
+
+            <!-- Formulario de compra -->
+            <div id="checkout-form">
+                <h2>Confirmar pedido</h2>
+
+                <div class="modal-resumen" id="modal-resumen"></div>
+
+                <div class="form-group">
+                    <label for="c-nombre">Nombre completo</label>
+                    <input type="text" id="c-nombre" placeholder="Ej: María García" required>
+                </div>
+                <div class="form-group">
+                    <label for="c-email">Email</label>
+                    <input type="email" id="c-email" placeholder="tu@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="c-tel">Teléfono / WhatsApp</label>
+                    <input type="tel" id="c-tel" placeholder="Ej: 11-1234-5678" required>
+                </div>
+
+                <div class="metodos-pago">
+                    <h3>Medio de pago</h3>
+
+                    <div class="metodo-opcion seleccionado" data-metodo="mercadopago" onclick="seleccionarMetodo(this)">
+                        <input type="radio" name="pago" checked>
+                        <div class="metodo-check"></div>
+                        <div class="metodo-texto">
+                            <strong>💳 Mercado Pago</strong>
+                            <span>Tarjeta, débito o dinero en cuenta</span>
+                        </div>
+                    </div>
+
+                    <div class="metodo-opcion" data-metodo="transferencia" onclick="seleccionarMetodo(this)">
+                        <input type="radio" name="pago">
+                        <div class="metodo-check"></div>
+                        <div class="metodo-texto">
+                            <strong>🏦 Transferencia bancaria</strong>
+                            <span>CBU / Alias — coordinamos por WhatsApp</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Datos de transferencia (se muestra al elegir esa opción) -->
+                <div class="info-transferencia" id="info-transferencia">
+                    <strong>Datos para transferir:</strong><br>
+                    Titular: Fusión Peluquería<br>
+                    CBU: <strong>0000000000000000000000</strong><br>
+                    Alias: <strong>FUSION.PELUQUERIA</strong><br>
+                    <br>
+                    ⚠️ Luego de transferir, envianos el comprobante por WhatsApp.
+                </div>
+
+                <button class="btn-confirmar" id="btn-confirmar">Confirmar pedido</button>
+            </div>
+
+            <!-- Pantalla de confirmación -->
+            <div class="compra-confirmada" id="compra-confirmada">
+                <div class="check-grande">✅</div>
+                <h3>¡Pedido recibido!</h3>
+                <p id="msg-confirmacion">Nos pondremos en contacto para coordinar la entrega.</p>
+                <a href="#" id="wsp-compra" class="wsp-confirmar" target="_blank" rel="noopener">
+                    💬 Confirmar por WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <h2>Nuestra Ubicación</h2>
+        <div class="mapa">
+            <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3286.2960241634796!2d-58.71906502353306!3d-34.546059554456725!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95bcbd731d122c87%3A0x3b8b368166b383b!2sJos%C3%A9%20Mar%C3%ADa%20Paz%201612%2C%20B1663FSK%20San%20Miguel%2C%20Provincia%20de%20Buenos%20Aires!5e0!3m2!1ses!2sar!4v1731556572540!5m2!1ses!2sar"
+                width="auto" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+        <div class="barra2">
+            <div class="logofusion">
+                <img src="/img/logofusion.jpg" alt="logofusion">
+            </div>
+            <p>© 2024 Fusión Peluquería. Todos Los Derechos Reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+    // ══════════════════════════════════════════
+    // CONFIGURACIÓN — editá estos datos
+    // ══════════════════════════════════════════
+    const CONFIG = {
+        whatsappNumero: '5491100000000',   // ← Tu número con código de país, sin + ni espacios
+        formspreeUrl: 'https://formspree.io/f/xyzyjlky', // ← Tu endpoint de Formspree
+        mercadoPagoLink: 'https://link.mercadopago.com.ar/fusion' // ← Tu link de pago MP
+    };
+
+    // ══════════════════════════════════════════
+    // CARRITO
+    // ══════════════════════════════════════════
+    let carrito = [];
+    let metodoPago = 'mercadopago';
+
+    // Cargar productos desde JSON
+    async function cargarProductos() {
+        try {
+            const res = await fetch('./productos.json');
+            const productos = await res.json();
+            renderizarProductos(productos);
+            generarFiltros(productos);
+        } catch (e) {
+            console.error('Error cargando productos:', e);
+            document.getElementById('productos-grid').innerHTML =
+                '<p style="text-align:center;color:#999;padding:40px;">No se pudieron cargar los productos.</p>';
+        }
+    }
+
+    function renderizarProductos(productos, filtro = 'Todos') {
+        const grid = document.getElementById('productos-grid');
+        const lista = filtro === 'Todos' ? productos : productos.filter(p => p.categoria === filtro);
+        grid.innerHTML = lista.map(p => `
+            <div class="producto-card" data-id="${p.id}">
+                <img src="${p.imagen}" alt="${p.nombre}"
+                     onerror="this.src='https://via.placeholder.com/300x300?text=${encodeURIComponent(p.nombre)}'">
+                <div class="producto-info">
+                    <div class="producto-categoria">${p.categoria}</div>
+                    <div class="producto-nombre">${p.nombre}</div>
+                    <div class="producto-descripcion">${p.descripcion}</div>
+                    <div class="producto-footer">
+                        <span class="producto-precio">$${p.precio.toLocaleString('es-AR')}</span>
+                        <button class="btn-agregar" onclick="agregarAlCarrito(${JSON.stringify(p).replace(/"/g, '&quot;')})">
+                            Agregar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function generarFiltros(productos) {
+        const categorias = [...new Set(productos.map(p => p.categoria))];
+        const cont = document.getElementById('filtros-productos');
+        categorias.forEach(cat => {
+            const btn = document.createElement('button');
+            btn.className = 'filtro-btn';
+            btn.dataset.cat = cat;
+            btn.textContent = cat;
+            btn.onclick = () => {
+                document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('activo'));
+                btn.classList.add('activo');
+                renderizarProductos(window._productos, cat);
+            };
+            cont.appendChild(btn);
+        });
+        // Guardar productos para filtros
+        window._productos = productos;
+        // Primer filtro "Todos"
+        document.querySelector('.filtro-btn[data-cat="Todos"]').onclick = () => {
+            document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('activo'));
+            document.querySelector('.filtro-btn[data-cat="Todos"]').classList.add('activo');
+            renderizarProductos(window._productos, 'Todos');
+        };
+    }
+
+    function agregarAlCarrito(producto) {
+        const existe = carrito.find(i => i.id === producto.id);
+        if (existe) {
+            existe.cantidad++;
+        } else {
+            carrito.push({ ...producto, cantidad: 1 });
+        }
+        actualizarCarritoUI();
+        // Feedback visual en botón
+        const btns = document.querySelectorAll(`.producto-card[data-id="${producto.id}"] .btn-agregar`);
+        btns.forEach(btn => {
+            btn.textContent = '✓ Agregado';
+            btn.classList.add('agregado');
+            setTimeout(() => {
+                btn.textContent = 'Agregar';
+                btn.classList.remove('agregado');
+            }, 1500);
+        });
+    }
+
+    function cambiarCantidad(id, delta) {
+        const item = carrito.find(i => i.id === id);
+        if (!item) return;
+        item.cantidad += delta;
+        if (item.cantidad <= 0) carrito = carrito.filter(i => i.id !== id);
+        actualizarCarritoUI();
+    }
+
+    function eliminarItem(id) {
+        carrito = carrito.filter(i => i.id !== id);
+        actualizarCarritoUI();
+    }
+
+    function vaciarCarrito() {
+        carrito = [];
+        actualizarCarritoUI();
+    }
+
+    function totalCarrito() {
+        return carrito.reduce((acc, i) => acc + i.precio * i.cantidad, 0);
+    }
+
+    function actualizarCarritoUI() {
+        const total = totalCarrito();
+        const cantidad = carrito.reduce((a, i) => a + i.cantidad, 0);
+
+        // Badge
+        const badge = document.getElementById('carrito-badge');
+        badge.textContent = cantidad;
+        badge.classList.toggle('oculto', cantidad === 0);
+
+        // Items
+        const cont = document.getElementById('carrito-items');
+        const footer = document.getElementById('carrito-footer');
+        const vacio = document.getElementById('carrito-vacio');
+
+        if (carrito.length === 0) {
+            vacio.style.display = 'block';
+            footer.style.display = 'none';
+            cont.innerHTML = '';
+            cont.appendChild(vacio);
+        } else {
+            vacio.style.display = 'none';
+            footer.style.display = 'block';
+            cont.innerHTML = carrito.map(i => `
+                <div class="carrito-item">
+                    <img src="${i.imagen}" alt="${i.nombre}"
+                         onerror="this.src='https://via.placeholder.com/60x60?text=img'">
+                    <div class="item-info">
+                        <div class="item-nombre">${i.nombre}</div>
+                        <div class="item-precio">$${(i.precio * i.cantidad).toLocaleString('es-AR')}</div>
+                    </div>
+                    <div class="item-controles">
+                        <button onclick="cambiarCantidad(${i.id}, -1)">−</button>
+                        <span class="item-cantidad">${i.cantidad}</span>
+                        <button onclick="cambiarCantidad(${i.id}, 1)">+</button>
+                    </div>
+                    <button class="btn-eliminar-item" onclick="eliminarItem(${i.id})" title="Eliminar">×</button>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('carrito-total-monto').textContent =
+            '$' + total.toLocaleString('es-AR');
+    }
+
+    // ══════════════════════════════════════════
+    // APERTURA / CIERRE CARRITO
+    // ══════════════════════════════════════════
+    function abrirCarrito() {
+        document.getElementById('carrito-panel').classList.add('abierto');
+        document.getElementById('overlay-carrito').classList.add('visible');
+        document.body.style.overflow = 'hidden';
+    }
+    function cerrarCarrito() {
+        document.getElementById('carrito-panel').classList.remove('abierto');
+        document.getElementById('overlay-carrito').classList.remove('visible');
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('btn-abrir-carrito').addEventListener('click', abrirCarrito);
+    document.getElementById('btn-cerrar-carrito').addEventListener('click', cerrarCarrito);
+    document.getElementById('overlay-carrito').addEventListener('click', cerrarCarrito);
+    document.getElementById('btn-vaciar').addEventListener('click', vaciarCarrito);
+
+    // ══════════════════════════════════════════
+    // CHECKOUT
+    // ══════════════════════════════════════════
+    document.getElementById('btn-checkout').addEventListener('click', () => {
+        cerrarCarrito();
+        // Armar resumen
+        const resumen = document.getElementById('modal-resumen');
+        const total = totalCarrito();
+        resumen.innerHTML =
+            carrito.map(i => `
+                <div class="modal-resumen-item">
+                    <span>${i.nombre} x${i.cantidad}</span>
+                    <span>$${(i.precio * i.cantidad).toLocaleString('es-AR')}</span>
+                </div>
+            `).join('') +
+            `<div class="modal-resumen-total">
+                <span>Total</span>
+                <span>$${total.toLocaleString('es-AR')}</span>
+            </div>`;
+        document.getElementById('modal-overlay').classList.add('visible');
+        document.getElementById('checkout-form').style.display = 'block';
+        document.getElementById('compra-confirmada').classList.remove('visible');
+        document.body.style.overflow = 'hidden';
+    });
+
+    document.getElementById('modal-cerrar').addEventListener('click', () => {
+        document.getElementById('modal-overlay').classList.remove('visible');
+        document.body.style.overflow = '';
+    });
+
+    // Selección método de pago
+    function seleccionarMetodo(el) {
+        document.querySelectorAll('.metodo-opcion').forEach(o => o.classList.remove('seleccionado'));
+        el.classList.add('seleccionado');
+        metodoPago = el.dataset.metodo;
+        document.getElementById('info-transferencia').classList.toggle('visible', metodoPago === 'transferencia');
+    }
+
+    // Confirmar pedido
+    document.getElementById('btn-confirmar').addEventListener('click', async () => {
+        const nombre = document.getElementById('c-nombre').value.trim();
+        const email = document.getElementById('c-email').value.trim();
+        const tel = document.getElementById('c-tel').value.trim();
+
+        if (!nombre || !email || !tel) {
+            alert('Por favor completá todos los campos.');
+            return;
+        }
+
+        const btn = document.getElementById('btn-confirmar');
+        btn.disabled = true;
+        btn.textContent = 'Enviando...';
+
+        const total = totalCarrito();
+        const resumenTexto = carrito.map(i => `${i.nombre} x${i.cantidad} = $${(i.precio * i.cantidad).toLocaleString('es-AR')}`).join('\n');
+
+        // Notificación por email (Formspree)
+        try {
+            await fetch(CONFIG.formspreeUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify({
+                    tipo: '🛒 Nueva compra en Fusión',
+                    cliente: nombre,
+                    email,
+                    telefono: tel,
+                    metodo_pago: metodoPago === 'mercadopago' ? 'Mercado Pago' : 'Transferencia',
+                    productos: resumenTexto,
+                    total: `$${total.toLocaleString('es-AR')}`
+                })
+            });
+        } catch (e) { console.warn('Formspree error:', e); }
+
+        // Mensaje WhatsApp para el cliente
+        const msgWsp = encodeURIComponent(
+            `Hola Fusión! 👋 Acabo de hacer un pedido:\n\n` +
+            carrito.map(i => `• ${i.nombre} x${i.cantidad} — $${(i.precio * i.cantidad).toLocaleString('es-AR')}`).join('\n') +
+            `\n\n*Total: $${total.toLocaleString('es-AR')}*\n` +
+            `Nombre: ${nombre}\n` +
+            `Medio de pago: ${metodoPago === 'mercadopago' ? 'Mercado Pago' : 'Transferencia'}`
+        );
+
+        document.getElementById('wsp-compra').href = `https://wa.me/${CONFIG.whatsappNumero}?text=${msgWsp}`;
+
+        if (metodoPago === 'mercadopago') {
+            document.getElementById('msg-confirmacion').textContent =
+                'Te redirigimos a Mercado Pago para completar el pago. También podés confirmar por WhatsApp.';
+            setTimeout(() => { window.open(CONFIG.mercadoPagoLink, '_blank'); }, 800);
+        } else {
+            document.getElementById('msg-confirmacion').textContent =
+                'Realizá la transferencia y envianos el comprobante por WhatsApp para confirmar tu pedido.';
+        }
+
+        document.getElementById('checkout-form').style.display = 'none';
+        document.getElementById('compra-confirmada').classList.add('visible');
+        carrito = [];
+        actualizarCarritoUI();
+        btn.disabled = false;
+        btn.textContent = 'Confirmar pedido';
+    });
+
+    // Init
+    cargarProductos();
+    </script>
+
+</body>
+</html>
