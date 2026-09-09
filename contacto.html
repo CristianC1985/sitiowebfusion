@@ -235,7 +235,8 @@
       <div class="contenedor">
         <div class="barra">
           <div class="logofusion">
-            <img src="/img/logofusion.jpg" alt="logofusion" />
+            <img src="/img/fusionlog.png" alt="logofusion" />
+            
           </div>
           <nav class="navegacion">
             <a href="nosotros.html" class="navegacion__enlace">Nosotros</a>
@@ -388,19 +389,116 @@
         </section>
       </div>
 
-      <footer class="footer">
-        <div class="">
-          <div class="barra2">
-            <h1 class="logo__nombre no-margin centrar-texto">
-              Fusión<span class="logo__bold">Peluquería</span>
-            </h1>
+<footer class="footer-pro">
+        <div class="contenedor">
+          <div class="footer-grid">
+            <!-- Columna 1: Marca -->
+            <div class="footer-marca">
+              <span class="footer-marca__logo"
+                >Fusión<span>Peluquería</span></span
+              >
+              <p class="footer-marca__desc">
+                16 años transformando cabellos y conquistando confianzas en San
+                Miguel, Buenos Aires. Un equipo de familia para vos.
+              </p>
+              <div class="footer-redes">
+                <a href="#" class="footer-red" title="Instagram">📸</a>
+                <a href="#" class="footer-red" title="WhatsApp">💬</a>
+                <a href="#" class="footer-red" title="Facebook">📘</a>
+              </div>
+            </div>
+
+            <!-- Columna 2: Navegación -->
+            <div class="footer-col">
+              <h4>Páginas</h4>
+              <ul>
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="nosotros.html">Nosotros</a></li>
+                <li><a href="productos.html">Productos</a></li>
+                <li><a href="contacto.html">Contacto</a></li>
+              </ul>
+            </div>
+
+            <!-- Columna 3: Servicios -->
+            <div class="footer-col">
+              <h4>Servicios</h4>
+              <ul>
+                <li><a href="index.html">Corte & Peinado</a></li>
+                <li><a href="index.html">Coloración & Mechas</a></li>
+                <li><a href="index.html">Balayage</a></li>
+                <li><a href="index.html">Keratina & Alisados</a></li>
+                <li><a href="index.html">Botox Capilar</a></li>
+                <li><a href="index.html">Manicuría</a></li>
+                <li><a href="index.html">Depilación</a></li>
+              </ul>
+            </div>
+
+            <!-- Columna 4: Contacto -->
+            <div class="footer-contacto">
+              <h4>Contacto</h4>
+              <div class="footer-contacto-item">
+                <span class="footer-contacto-item__icono">📍</span>
+                <span class="footer-contacto-item__texto"
+                  >José María Paz 1612,<br />San Miguel, Buenos Aires</span
+                >
+              </div>
+              <div class="footer-contacto-item">
+                <span class="footer-contacto-item__icono">📞</span>
+                <span class="footer-contacto-item__texto">
+                  <a href="tel:+541112345678"> 11 7366-8263</a>
+                </span>
+              </div>
+              <div class="footer-contacto-item">
+                <span class="footer-contacto-item__icono">🕐</span>
+                <span class="footer-contacto-item__texto">
+                  Mar–Sab: 10:00–18:00<br />
+                </span>
+              </div>
+              <div class="footer-contacto-item">
+                <span class="footer-contacto-item__icono">✉️</span>
+                <span class="footer-contacto-item__texto">
+                  <a href="mailto:fusionpeluqueria@email.com"
+                    >fusion.pelu@gmail.com</a
+                  >
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Franja inferior -->
+          <div class="footer-bottom">
+            <p class="footer-bottom__copy">
+              © 2026 Fusión Peluquería · Todos los derechos reservados
+            </p>
+            <div class="footer-bottom__links">
+              <a href="#">Política de privacidad</a>
+              <a href="contacto.html">Contacto</a>
+            </div>
           </div>
         </div>
-        <h4>
-          © 2024 Fusión Peluquería. Todos Los Derechos Reservados. All Rights
-          Reserved.
-        </h4>
       </footer>
+    </main>
+
+    <script>
+      // Animación de aparición al hacer scroll
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("visible");
+            }
+          });
+        },
+        { threshold: 0.15 },
+      );
+
+      document
+        .querySelectorAll(".fade-in")
+        .forEach((el) => observer.observe(el));
+    </script>
+  </body>
+</html>
+
     </main>
 
     <script>
