@@ -4,25 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Productos - Fusión Peluquería</title>  
-       
+    <title>Productos - Fusión Peluquería</title>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;1,400&family=PT+Sans:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
-   
     <link rel="stylesheet" href="./style/style.css">
-
     <style>
         :root {
-        --negro: #111;
-        --blanco: #fafaf8;
-        --rosa: #f8d470;
-        --rosa-oscuro: #94fcea;
-        --gris: #f4f4f2;
-        --gris-texto: #666;
+            --negro: #111;
+            --blanco: #fafaf8;
+            --dorado: #f8d470;
+            --verde: #94fcea;
+            --gris: #f4f4f2;
+            --gris-texto: #666;
         }
 
-        /* ══════════════════════════
-           HERO
-        ══════════════════════════ */
+        /* HERO */
         .productos-hero {
             background-color: var(--negro);
             color: white;
@@ -30,21 +25,17 @@
             position: relative;
             overflow: hidden;
         }
-
         .productos-hero::before {
             content: '';
             position: absolute;
-            top: -40%;
-            right: -8%;
-            width: 55rem;
-            height: 55rem;
+            top: -40%; right: -8%;
+            width: 55rem; height: 55rem;
             background: radial-gradient(circle, rgba(232,196,212,0.13) 0%, transparent 70%);
             pointer-events: none;
         }
-
         .hero-badge {
             display: inline-block;
-            background: var(--rosa);
+            background: var(--dorado);
             color: var(--negro);
             font-size: 1.2rem;
             font-weight: 700;
@@ -55,7 +46,6 @@
             margin-bottom: 2.5rem;
             font-family: 'Open Sans', sans-serif;
         }
-
         .productos-hero h1 {
             font-family: 'Playfair Display', serif;
             font-size: clamp(3.5rem, 5vw, 6.5rem);
@@ -64,16 +54,8 @@
             text-align: left;
             line-height: 1.15;
             margin-bottom: 2rem;
-            display: block;
-            justify-content: unset;
-            align-items: unset;
         }
-
-        .productos-hero h1 em {
-            font-style: italic;
-            color: var(--rosa);
-        }
-
+        .productos-hero h1 em { font-style: italic; color: var(--dorado); }
         .productos-hero p {
             font-size: 1.7rem;
             color: rgba(255,255,255,0.65);
@@ -81,9 +63,7 @@
             line-height: 1.8;
         }
 
-        /* ══════════════════════════
-           FILTROS
-        ══════════════════════════ */
+        /* FILTROS */
         .filtros-banda {
             background: white;
             border-bottom: 1px solid #ebebeb;
@@ -92,7 +72,6 @@
             z-index: 100;
             box-shadow: 0 2px 15px rgba(0,0,0,0.06);
         }
-
         .filtros-inner {
             width: min(90%, 120rem);
             margin: 0 auto;
@@ -103,9 +82,7 @@
             overflow-x: auto;
             scrollbar-width: none;
         }
-
         .filtros-inner::-webkit-scrollbar { display: none; }
-
         .filtro-btn {
             flex-shrink: 0;
             padding: 0.8rem 2rem;
@@ -120,22 +97,17 @@
             transition: all 0.2s ease;
             white-space: nowrap;
         }
-
-        .filtro-btn:hover,
-        .filtro-btn.activo {
+        .filtro-btn:hover, .filtro-btn.activo {
             background: var(--negro);
             border-color: var(--negro);
             color: white;
         }
 
-        /* ══════════════════════════
-           SECCIÓN PRODUCTOS
-        ══════════════════════════ */
+        /* SECCIÓN PRODUCTOS */
         .productos-seccion {
             padding: 7rem 0 9rem;
             background: var(--blanco);
         }
-
         .productos-header {
             display: flex;
             justify-content: space-between;
@@ -144,7 +116,6 @@
             flex-wrap: wrap;
             gap: 1.5rem;
         }
-
         .productos-header h2 {
             font-family: 'Playfair Display', serif;
             font-size: 3.2rem;
@@ -152,96 +123,55 @@
             padding: 0;
             text-align: left;
         }
-
         .productos-count {
             font-size: 1.4rem;
             color: var(--gris-texto);
             font-family: 'Open Sans', sans-serif;
         }
 
-        /* Grid de cards */
+        /* CARDS */
         .cards {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 2.5rem;
         }
+        @media (max-width: 900px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 540px) { .cards { grid-template-columns: 1fr; } }
 
-        @media (max-width: 900px) {
-            .cards { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        @media (max-width: 540px) {
-            .cards { grid-template-columns: 1fr; }
-        }
-
-        /* Card individual */
         .card {
             background: white;
             border-radius: 16px;
             overflow: hidden;
             box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
             display: flex;
             flex-direction: column;
             opacity: 0;
             transform: translateY(20px);
             transition: opacity 0.5s ease, transform 0.5s ease, box-shadow 0.3s ease;
         }
+        .card.visible { opacity: 1; transform: translateY(0); }
+        .card:hover { box-shadow: 0 12px 35px rgba(0,0,0,0.12); transform: translateY(-5px); }
 
-        .card.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .card:hover {
-            box-shadow: 0 12px 35px rgba(0,0,0,0.12);
-            transform: translateY(-5px);
-        }
-
-        /* Imagen */
         .card__imagen {
             position: relative;
             height: 22rem;
             background: var(--gris);
             overflow: hidden;
         }
-
         .card__imagen img {
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             object-fit: contain;
             padding: 1.5rem;
             transition: transform 0.4s ease;
         }
+        .card:hover .card__imagen img { transform: scale(1.05); }
 
-        .card:hover .card__imagen img {
-            transform: scale(1.05);
-        }
-
-        /* Badge de marca */
-        .card__marca-badge {
-            position: absolute;
-            top: 1.2rem;
-            left: 1.2rem;
-            background: white;
-            border-radius: 50px;
-            padding: 0.4rem 1.2rem;
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--negro);
-            font-family: 'Open Sans', sans-serif;
-            letter-spacing: 0.05em;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        /* Cuerpo de la card */
         .card__body {
             padding: 2.2rem 2.2rem 1.5rem;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
         }
-
         .card__nombre {
             font-family: 'PT Sans', sans-serif;
             font-size: 1.6rem;
@@ -250,21 +180,16 @@
             line-height: 1.3;
             margin-bottom: 1rem;
         }
-
         .card__descripcion {
             font-size: 1.35rem;
             color: var(--gris-texto);
             line-height: 1.7;
             flex-grow: 1;
-
-            /* truncar a 3 líneas */
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
-
-        /* Footer de la card */
         .card__footer {
             padding: 1.5rem 2.2rem 2.2rem;
             display: flex;
@@ -274,22 +199,12 @@
             margin-top: 1.5rem;
             gap: 1rem;
         }
-
         .card__precio {
             font-family: 'Playfair Display', serif;
             font-size: 2.2rem;
             font-weight: 700;
             color: var(--negro);
         }
-
-        .card__precio span {
-            font-size: 1.4rem;
-            color: var(--gris-texto);
-            font-family: 'Open Sans', sans-serif;
-            font-weight: 400;
-        }
-
-        /* Botón agregar */
         .btn-agregar {
             display: flex;
             align-items: center;
@@ -306,197 +221,401 @@
             transition: background 0.25s ease, transform 0.15s ease;
             white-space: nowrap;
         }
+        .btn-agregar:hover { background: #333; transform: scale(1.03); }
+        .btn-agregar.agregado { background: #25D366; }
 
-        .btn-agregar:hover {
-            background: #333;
-            transform: scale(1.03);
-        }
-
-        .btn-agregar.agregado {
-            background: var(--rosa-oscuro);
-        }
-
-        /* ══════════════════════════
-           CARRITO FLOTANTE
-        ══════════════════════════ */
-        .carrito-emergente {
-            display: none;
+        /* CARRITO FLOTANTE */
+        .carrito-fab {
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(3px);
+            bottom: 3rem; right: 3rem;
+            z-index: 400;
         }
-
-        .carrito-emergente.activo {
-            display: flex;
-        }
-
-        .carrito-contenido {
-            background: white;
-            border-radius: 20px;
-            padding: 3.5rem;
-            width: 90%;
-            max-width: 55rem;
-            max-height: 85vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-            position: relative;
-        }
-
-        .carrito-contenido h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.8rem;
-            color: var(--negro);
-            padding: 0 0 2rem;
-            border-bottom: 1px solid #f0f0f0;
-            margin-bottom: 2rem;
-            text-align: left;
-        }
-
-        #carrito-lista {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .producto-carrito {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            padding: 1.2rem;
-            background: var(--gris);
-            border-radius: 10px;
-        }
-
-        .producto-carrito img {
-            width: 5.5rem;
-            height: 5.5rem;
-            object-fit: contain;
-            border-radius: 8px;
-            background: white;
-            padding: 0.3rem;
-        }
-
-        .producto-carrito span {
-            flex-grow: 1;
-            font-size: 1.4rem;
-            color: var(--negro);
-            font-weight: 600;
-        }
-
-        .producto-carrito input {
-            width: 5.5rem;
-            padding: 0.6rem;
-            border: 1.5px solid #ddd;
-            border-radius: 8px;
-            font-size: 1.4rem;
-            text-align: center;
-        }
-
-        .carrito-total {
-            font-family: 'Playfair Display', serif;
-            font-size: 2rem;
-            color: var(--negro);
-            text-align: right;
-            padding: 1.5rem 0;
-            border-top: 1px solid #f0f0f0;
-            margin-bottom: 2rem;
-        }
-
-        .carrito-acciones {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        .carrito-acciones button {
-            padding: 1.2rem;
-            border-radius: 10px;
-            border: none;
-            font-size: 1.4rem;
-            font-family: 'PT Sans', sans-serif;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        #finalizar-compra {
+        .carrito-fab button {
+            width: 6rem; height: 6rem;
+            border-radius: 50%;
             background: var(--negro);
             color: white;
-            grid-column: 1 / -1;
-        }
-
-        #finalizar-compra:hover { background: #333; }
-
-        #vaciar-carrito {
-            background: var(--gris);
-            color: #555;
-        }
-
-        #vaciar-carrito:hover { background: #e0e0e0; }
-
-        #volver {
-            background: var(--rosa);
-            color: var(--negro);
-        }
-
-        #volver:hover { background: var(--rosa-oscuro); color: white; }
-
-        /* Icono carrito en header */
-        .carrito-icono {
-            cursor: pointer;
-            
-            display: flex;
-            align-items: center;
+            border: none;
             font-size: 2.2rem;
-            padding: 0.8rem;
-            border-radius: 50px;
-            transition: background 0.2s ease;
+            cursor: pointer;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+            position: relative;
+            transition: background 0.2s, transform 0.2s;
         }
-
-        .carrito-icono:hover {
-            background: rgba(255,255,255,0.1);
-        }
-
-        .contador-carrito {
+        .carrito-fab button:hover { background: #333; transform: scale(1.08); }
+        .carrito-badge {
             position: absolute;
-            top: 0;
-            right: 0;
-            background: var(--rosa-oscuro);
+            top: -6px; right: -6px;
+            background: #e53935;
             color: white;
-            width: 2rem;
-            height: 2rem;
-            border-radius: 50%;
             font-size: 1.1rem;
             font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            min-width: 2.2rem; height: 2.2rem;
+            border-radius: 50px;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 0.4rem;
             font-family: 'Open Sans', sans-serif;
         }
+        .carrito-badge.oculto { display: none; }
 
-        /* ══════════════════════════
-           FOOTER PRO
-        ══════════════════════════ */
+        /* PANEL LATERAL CARRITO */
+        .overlay-carrito {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 500;
+            display: none;
+        }
+        .overlay-carrito.visible { display: block; }
+
+        .carrito-panel {
+            position: fixed;
+            top: 0; right: -44rem;
+            width: 42rem;
+            max-width: 95vw;
+            height: 100vh;
+            background: white;
+            z-index: 600;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -4px 0 30px rgba(0,0,0,0.15);
+            transition: right 0.35s cubic-bezier(.4,0,.2,1);
+        }
+        .carrito-panel.abierto { right: 0; }
+
+        .carrito-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem 2.4rem;
+            border-bottom: 1.5px solid #eee;
+        }
+        .carrito-header h2 {
+            font-family: 'PT Sans', sans-serif;
+            font-size: 1.8rem;
+            color: var(--negro);
+            padding: 0; margin: 0;
+            text-align: left;
+        }
+        .btn-cerrar-panel {
+            background: none; border: none;
+            font-size: 2.4rem; cursor: pointer;
+            color: #aaa; line-height: 1;
+        }
+        .btn-cerrar-panel:hover { color: var(--negro); background: none; }
+
+        .carrito-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.6rem 2.4rem;
+        }
+        .carrito-vacio {
+            text-align: center;
+            color: #bbb;
+            font-size: 1.5rem;
+            margin-top: 6rem;
+        }
+        .carrito-vacio span { font-size: 4rem; display: block; margin-bottom: 1.2rem; }
+
+        .carrito-item {
+            display: flex;
+            align-items: center;
+            gap: 1.4rem;
+            padding: 1.4rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .carrito-item img {
+            width: 6rem; height: 6rem;
+            object-fit: contain;
+            background: var(--gris);
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+        .item-info { flex: 1; }
+        .item-nombre {
+            font-family: 'PT Sans', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--negro);
+            margin-bottom: 0.4rem;
+        }
+        .item-precio { font-size: 1.3rem; color: var(--gris-texto); }
+        .item-controles { display: flex; align-items: center; gap: 0.8rem; }
+        .item-controles button {
+            width: 2.8rem; height: 2.8rem;
+            border: 1.5px solid #ddd;
+            background: white;
+            font-size: 1.6rem;
+            cursor: pointer;
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            transition: border-color 0.2s;
+            padding: 0;
+        }
+        .item-controles button:hover { border-color: var(--negro); background: white; }
+        .item-cantidad { font-size: 1.4rem; min-width: 2rem; text-align: center; }
+        .btn-eliminar-item {
+            background: none; border: none;
+            color: #ccc; cursor: pointer;
+            font-size: 1.8rem; padding: 0 0.4rem;
+            transition: color 0.2s;
+        }
+        .btn-eliminar-item:hover { color: #e53935; background: none; }
+
+        .carrito-footer {
+            padding: 2rem 2.4rem;
+            border-top: 1.5px solid #eee;
+        }
+        .carrito-total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.6rem;
+        }
+        .carrito-total-label {
+            font-family: 'PT Sans', sans-serif;
+            font-size: 1.3rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #999;
+        }
+        .carrito-total-monto {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: var(--negro);
+        }
+        .btn-checkout {
+            width: 100%;
+            padding: 1.5rem;
+            background: var(--negro);
+            color: white;
+            border: none;
+            font-family: 'PT Sans', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            transition: background 0.2s;
+        }
+        .btn-checkout:hover { background: #333; }
+        .btn-vaciar-panel {
+            width: 100%;
+            padding: 1rem;
+            background: transparent;
+            border: 1.5px solid #ddd;
+            font-family: 'PT Sans', sans-serif;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: #aaa;
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+        .btn-vaciar-panel:hover { border-color: #e53935; color: #e53935; background: transparent; }
+
+        /* MODAL CHECKOUT */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 700;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .modal-overlay.visible { display: flex; }
+        .modal {
+            background: white;
+            width: 100%;
+            max-width: 50rem;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 3.6rem;
+            border-radius: 16px;
+            position: relative;
+        }
+        @media (max-width: 560px) { .modal { padding: 2.4rem 2rem; } }
+        .modal-cerrar {
+            position: absolute;
+            top: 1.6rem; right: 2rem;
+            background: none; border: none;
+            font-size: 2.4rem; cursor: pointer; color: #aaa;
+        }
+        .modal-cerrar:hover { color: var(--negro); background: none; }
+        .modal h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.4rem;
+            color: var(--negro);
+            margin: 0 0 2.4rem;
+            text-align: left;
+            padding: 0;
+        }
+        .modal-resumen {
+            background: var(--gris);
+            padding: 1.6rem;
+            border-radius: 10px;
+            margin-bottom: 2.4rem;
+            font-size: 1.4rem;
+            color: #555;
+        }
+        .modal-resumen-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.6rem;
+        }
+        .modal-resumen-total {
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #ddd;
+            padding-top: 1rem;
+            margin-top: 0.8rem;
+            font-family: 'PT Sans', sans-serif;
+            font-weight: 700;
+            color: var(--negro);
+            font-size: 1.6rem;
+        }
+        .form-group { margin-bottom: 1.6rem; }
+        .form-group label {
+            display: block;
+            font-family: 'PT Sans', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #777;
+            margin-bottom: 0.6rem;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 1.1rem 1.4rem;
+            border: 1.5px solid #ddd;
+            border-radius: 8px;
+            font-size: 1.5rem;
+            font-family: 'Open Sans', sans-serif;
+            color: var(--negro);
+            background: #fafafa;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus { outline: none; border-color: var(--negro); background: white; }
+
+        .metodos-pago { margin-bottom: 2rem; }
+        .metodos-pago h3 {
+            font-family: 'PT Sans', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #777;
+            margin: 0 0 1.2rem;
+        }
+        .metodo-opcion {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            padding: 1.4rem 1.6rem;
+            border: 1.5px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            transition: border-color 0.2s;
+        }
+        .metodo-opcion:hover { border-color: #aaa; }
+        .metodo-opcion.seleccionado { border-color: var(--negro); }
+        .metodo-opcion input[type="radio"] { display: none; }
+        .metodo-check {
+            width: 1.8rem; height: 1.8rem;
+            border: 2px solid #ccc;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+        .metodo-opcion.seleccionado .metodo-check { border-color: var(--negro); background: var(--negro); }
+        .metodo-check::after {
+            content: '';
+            width: 8px; height: 8px;
+            background: white;
+            border-radius: 50%;
+            display: none;
+        }
+        .metodo-opcion.seleccionado .metodo-check::after { display: block; }
+        .metodo-texto strong { display: block; font-size: 1.4rem; color: var(--negro); font-family: 'PT Sans', sans-serif; }
+        .metodo-texto span { font-size: 1.2rem; color: #999; }
+
+        .info-transferencia {
+            display: none;
+            background: #fffbeb;
+            border: 1.5px solid #f6e05e;
+            padding: 1.6rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            font-size: 1.35rem;
+            color: #555;
+            line-height: 1.8;
+        }
+        .info-transferencia.visible { display: block; }
+
+        .btn-confirmar {
+            width: 100%;
+            padding: 1.5rem;
+            background: var(--negro);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: 'PT Sans', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-confirmar:hover { background: #333; }
+        .btn-confirmar:disabled { background: #ccc; cursor: not-allowed; }
+
+        .compra-confirmada {
+            display: none;
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+        .compra-confirmada.visible { display: block; }
+        .compra-confirmada .check-grande { font-size: 5rem; margin-bottom: 1.6rem; }
+        .compra-confirmada h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.4rem;
+            color: var(--negro);
+            margin-bottom: 1rem;
+            padding: 0;
+        }
+        .compra-confirmada p { color: #777; margin-bottom: 2rem; font-size: 1.5rem; }
+        .wsp-confirmar {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 1.3rem 2.4rem;
+            background: #25D366;
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-family: 'PT Sans', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            transition: background 0.2s;
+        }
+        .wsp-confirmar:hover { background: #1ebe5d; }
+
+        /* FOOTER */
         .footer-pro {
             background-color: #111;
             color: rgba(255,255,255,0.75);
             padding: 7rem 0 0;
             font-family: 'Open Sans', sans-serif;
         }
-
         .footer-pro::before {
             content: '';
             display: block;
             height: 3px;
             background: linear-gradient(90deg, transparent, #fbf067, #f1d83c, #e3ce20, transparent);
         }
-
         .footer-grid {
             display: grid;
             grid-template-columns: 2fr 1fr 1fr 1.4fr;
@@ -504,26 +623,18 @@
             padding-bottom: 5rem;
             border-bottom: 1px solid rgba(255,255,255,0.08);
         }
-
-        @media (max-width: 900px) {
-            .footer-grid { grid-template-columns: 1fr 1fr; gap: 4rem; }
-        }
-
-        @media (max-width: 540px) {
-            .footer-grid { grid-template-columns: 1fr; gap: 3.5rem; }
-        }
+        @media (max-width: 900px) { .footer-grid { grid-template-columns: 1fr 1fr; gap: 4rem; } }
+        @media (max-width: 540px) { .footer-grid { grid-template-columns: 1fr; gap: 3.5rem; } }
 
         .footer-marca__logo {
             font-family: 'Playfair Display', serif;
             font-size: 3rem;
             color: white;
-            margin: 2rem;
+            margin-bottom: 1.5rem;
             display: block;
-            line-height: 1;
+            line-height: 1.3;
         }
-
-        .footer-marca__logo span { color: var(--rosa); }
-
+        .footer-marca__logo span { color: var(--dorado); }
         .footer-marca__desc {
             font-size: 1.45rem;
             line-height: 1.8;
@@ -531,9 +642,7 @@
             margin-bottom: 2.5rem;
             max-width: 28rem;
         }
-
         .footer-redes { display: flex; gap: 1.2rem; }
-
         .footer-red {
             width: 4rem; height: 4rem;
             border-radius: 50%;
@@ -544,59 +653,32 @@
             transition: all 0.25s ease;
             color: white;
         }
-
-        .footer-red:hover {
-            background: #e8c4d4;
-            border-color: #e8c4d4;
-            transform: translateY(-3px);
-        }
-
-        .footer-col h4,
-        .footer-contacto h4 {
+        .footer-red:hover { background: #e8c4d4; border-color: #e8c4d4; transform: translateY(-3px); }
+        .footer-col h4, .footer-contacto h4 {
             font-family: 'PT Sans', sans-serif;
             font-size: 1.3rem;
             font-weight: 700;
             letter-spacing: 0.18em;
             text-transform: uppercase;
             color: white;
-            margin: 2rem;
+            margin-bottom: 2rem;
             padding: 0;
             text-align: left;
         }
-
         .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 1.1rem; }
-
         .footer-col ul li a {
             font-size: 1.45rem;
             color: rgba(255,255,255,0.55);
             text-decoration: none;
-            transition: color 0.2s ease, padding-left 0.2s ease;
+            transition: color 0.2s, padding-left 0.2s;
             display: inline-block;
         }
-
-        .footer-col ul li a:hover { color: #e8c4d4; padding-left: 0.5rem; }
-
-        .footer-contacto-item {
-            display: flex; align-items: flex-start;
-            gap: 1.2rem; margin-bottom: 1.8rem;
-        }
-
+        .footer-col ul li a:hover { color: var(--verde); padding-left: 0.5rem; }
+        .footer-contacto-item { display: flex; align-items: flex-start; gap: 1.2rem; margin-bottom: 1.8rem; }
         .footer-contacto-item__icono { font-size: 1.6rem; flex-shrink: 0; margin-top: 0.1rem; }
-
-        .footer-contacto-item__texto {
-            font-size: 1.4rem;
-            color: rgba(255,255,255,0.55);
-            line-height: 1.6;
-        }
-
-        .footer-contacto-item__texto a {
-            color: rgba(255,255,255,0.55);
-            text-decoration: none;
-            transition: color 0.2s ease;
-        }
-
-        .footer-contacto-item__texto a:hover { color: #e8c4d4; }
-
+        .footer-contacto-item__texto { font-size: 1.4rem; color: rgba(255,255,255,0.55); line-height: 1.6; }
+        .footer-contacto-item__texto a { color: rgba(255,255,255,0.55); text-decoration: none; transition: color 0.2s; }
+        .footer-contacto-item__texto a:hover { color: var(--verde); }
         .footer-bottom {
             padding: 2.5rem 0;
             display: flex;
@@ -605,23 +687,10 @@
             gap: 2rem;
             flex-wrap: wrap;
         }
-
-        @media (max-width: 540px) {
-            .footer-bottom { flex-direction: column; text-align: center; gap: 1rem; }
-        }
-
         .footer-bottom__copy { font-size: 1.3rem; color: rgba(255,255,255,0.35); }
-
         .footer-bottom__links { display: flex; gap: 2.5rem; }
-
-        .footer-bottom__links a {
-            font-size: 1.3rem;
-            color: rgba(255,255,255,0.35);
-            text-decoration: none;
-            transition: color 0.2s ease;
-        }
-
-        .footer-bottom__links a:hover { color: #e8c4d4; }
+        .footer-bottom__links a { font-size: 1.3rem; color: rgba(255,255,255,0.35); text-decoration: none; transition: color 0.2s; }
+        .footer-bottom__links a:hover { color: var(--verde); }
     </style>
 </head>
 
@@ -631,234 +700,289 @@
         <div class="contenedor">
             <div class="barra">
                 <div class="logofusion">
-                   <img src="/img/fusionlog.png" alt="Logotipo de Fusión Peluquería en la cabecera de la tienda online" />
+                    <img src="/img/fusionlog.png" alt="Fusión Peluquería">
                 </div>
                 <nav class="navegacion">
                     <a href="nosotros.html" class="navegacion__enlace">Nosotros</a>
                     <a href="servicios.html" class="navegacion__enlace">Servicios</a>
                     <a href="productos.html" class="navegacion__enlace">Productos</a>
-                    <a href="turnos.html" class="navegacion__enlace nav-turno-btn activo">Reservar turno</a>
+                    <a href="turnos.html" class="navegacion__enlace">Reservar turno</a>
                     <a href="contacto.html" class="navegacion__enlace">Contacto</a>
                 </nav>
-                <div class="carrito-icono" id="carrito-icono">
-                    🛒
-                    <span class="contador-carrito" id="contador-carrito">0</span>
-                </div>
             </div>
         </div>
     </header>
 
-    <main>
+    <!-- Overlay carrito -->
+    <div class="overlay-carrito" id="overlay-carrito"></div>
 
-        <!-- Carrito emergente -->
-        <div class="carrito-emergente" id="carrito-emergente">
-            <div class="carrito-contenido">
-                <h2>🛒 Tu Carrito</h2>
-                <div id="carrito-lista"></div>
-                <div class="carrito-total">Total: <span id="total-carrito">$0</span></div>
-                <div class="carrito-acciones">
-                    <button id="vaciar-carrito">🗑 Vaciar</button>
-                    <button id="volver">✕ Cerrar</button>
-                    <button id="finalizar-compra">✓ Finalizar compra</button>
-                </div>
+    <!-- Panel lateral carrito -->
+    <div class="carrito-panel" id="carrito-panel">
+        <div class="carrito-header">
+            <h2>🛒 Tu carrito</h2>
+            <button class="btn-cerrar-panel" id="btn-cerrar-carrito">×</button>
+        </div>
+        <div class="carrito-items" id="carrito-items">
+            <div class="carrito-vacio" id="carrito-vacio">
+                <span>🛒</span>
+                Tu carrito está vacío.
             </div>
         </div>
+        <div class="carrito-footer" id="carrito-footer" style="display:none;">
+            <div class="carrito-total-row">
+                <span class="carrito-total-label">Total</span>
+                <span class="carrito-total-monto" id="carrito-total-monto">$0</span>
+            </div>
+            <button class="btn-checkout" id="btn-checkout">Confirmar pedido</button>
+            <button class="btn-vaciar-panel" id="btn-vaciar">Vaciar carrito</button>
+        </div>
+    </div>
 
-        <!-- ── HERO ── -->
+    <!-- Modal Checkout -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal">
+            <button class="modal-cerrar" id="modal-cerrar">×</button>
+            <div id="checkout-form">
+                <h2>Confirmar pedido</h2>
+                <div class="modal-resumen" id="modal-resumen"></div>
+                <div class="form-group">
+                    <label for="c-nombre">Nombre completo</label>
+                    <input type="text" id="c-nombre" placeholder="Ej: María García" required>
+                </div>
+                <div class="form-group">
+                    <label for="c-email">Email</label>
+                    <input type="email" id="c-email" placeholder="tu@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="c-tel">WhatsApp</label>
+                    <input type="tel" id="c-tel" placeholder="Ej: 11-1234-5678" required>
+                </div>
+                <div class="metodos-pago">
+                    <h3>Medio de pago</h3>
+                    <div class="metodo-opcion seleccionado" data-metodo="mercadopago" onclick="seleccionarMetodo(this)">
+                        <input type="radio" name="pago" checked>
+                        <div class="metodo-check"></div>
+                        <div class="metodo-texto">
+                            <strong>💳 Mercado Pago</strong>
+                            <span>Tarjeta, débito o dinero en cuenta</span>
+                        </div>
+                    </div>
+                    <div class="metodo-opcion" data-metodo="transferencia" onclick="seleccionarMetodo(this)">
+                        <input type="radio" name="pago">
+                        <div class="metodo-check"></div>
+                        <div class="metodo-texto">
+                            <strong>🏦 Transferencia bancaria</strong>
+                            <span>CBU / Alias — coordinamos por WhatsApp</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-transferencia" id="info-transferencia">
+                    <strong>Datos para transferir:</strong><br>
+                    Titular: Fusión Peluquería<br>
+                    CBU: <strong>completar con tu CBU</strong><br>
+                    Alias: <strong>FUSION.PELUQUERIA</strong><br><br>
+                    ⚠️ Luego de transferir, envianos el comprobante por WhatsApp.
+                </div>
+                <button class="btn-confirmar" id="btn-confirmar">Confirmar pedido</button>
+            </div>
+            <div class="compra-confirmada" id="compra-confirmada">
+                <div class="check-grande">✅</div>
+                <h3>¡Pedido recibido!</h3>
+                <p id="msg-confirmacion">Nos pondremos en contacto para coordinar la entrega.</p>
+                <a href="#" id="wsp-compra" class="wsp-confirmar" target="_blank" rel="noopener">
+                    💬 Confirmar por WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <main>
+        <!-- HERO -->
         <section class="productos-hero">
             <div class="contenedor">
                 <span class="hero-badge">✦ Tienda online</span>
                 <h1>Productos que<br><em>cuidan tu cabello</em></h1>
-                <p>Las mejores marcas profesionales disponibles para llevar a tu casa. Los mismos productos que usamos en el salón.</p>
+                <p>Las mejores marcas profesionales para llevar a tu casa. Los mismos productos que usamos en el salón.</p>
             </div>
         </section>
 
-        <!-- ── FILTROS ── -->
+        <!-- FILTROS -->
         <div class="filtros-banda">
-            <div class="filtros-inner">
-                <button class="filtro-btn activo" data-filtro="todos">Todos</button>
-                <button class="filtro-btn" data-filtro="argan">Argán</button>
-                <button class="filtro-btn" data-filtro="keratina">Keratina</button>
-                <button class="filtro-btn" data-filtro="karite">Karité</button>
-                <button class="filtro-btn" data-filtro="shampoo">Shampoos</button>
-                <button class="filtro-btn" data-filtro="mascara">Máscaras</button>
-                <button class="filtro-btn" data-filtro="crema">Cremas</button>
+            <div class="filtros-inner" id="filtros-inner">
+                <button class="filtro-btn activo" data-cat="Todos">Todos</button>
             </div>
         </div>
 
-        <!-- ── PRODUCTOS ── -->
+        <!-- PRODUCTOS -->
         <section class="productos-seccion">
             <div class="contenedor">
                 <div class="productos-header">
                     <h2>Nuestros productos</h2>
-                    <span class="productos-count" id="productos-count">12 productos</span>
+                    <span class="productos-count" id="productos-count"></span>
                 </div>
                 <div class="cards" id="productos-lista"></div>
             </div>
         </section>
+    </main>
 
-        <!-- ── FOOTER ── -->
-        <footer class="footer-pro">
-            <div class="contenedor">
-                <div class="footer-grid">
-                    <div class="footer-marca">
-                        <span class="footer-marca__logo">Fusión<span>Peluquería</span></span>
-                        <p class="footer-marca__desc">15 años transformando cabellos y conquistando confianzas en San Miguel, Buenos Aires. Un equipo de familia para vos.</p>
-                        <div class="footer-redes">
-                            <a href="#" class="footer-red" title="Instagram">📸</a>
-                            <a href="#" class="footer-red" title="WhatsApp">💬</a>
-                            <a href="#" class="footer-red" title="Facebook">📘</a>
-                        </div>
-                    </div>
-                    <div class="footer-col">
-                        <h4>Páginas</h4>
-                        <ul>
-                            <li><a href="index.html">Inicio</a></li>
-                            <li><a href="nosotros.html">Nosotros</a></li>
-                            <li><a href="productos.html">Productos</a></li>
-                            <a href="turnos.html" class="navegacion__enlace nav-turno-btn activo">Reservar turno</a>
-                            <li><a href="contacto.html">Contacto</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-col">
-                        <h4>Servicios</h4>
-                        <ul>
-                            <li><a href="servicios.html">Corte & Peinado</a></li>
-                            <li><a href="servicios.html">Coloración & Mechas</a></li>
-                            <li><a href="servicios.html">Balayage</a></li>
-                            <li><a href="servicios.html">Keratina & Alisados</a></li>
-                            <li><a href="servicios.html">Botox Capilar</a></li>
-                            <li><a href="servicios.html">Manicuría</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-contacto">
-                        <h4>Contacto</h4>
-                        <div class="footer-contacto-item">
-                            <span class="footer-contacto-item__icono">📍</span>
-                            <span class="footer-contacto-item__texto">José María Paz 1612,<br>San Miguel, Buenos Aires</span>
-                        </div>
-                        <div class="footer-contacto-item">
-                            <span class="footer-contacto-item__icono">📞</span>
-                            <span class="footer-contacto-item__texto"><a href="tel:+541112345678">(011) 1234-5678</a></span>
-                        </div>
-                        <div class="footer-contacto-item">
-                            <span class="footer-contacto-item__icono">🕐</span>
-                            <span class="footer-contacto-item__texto">Lun–Vie: 9:00–19:00<br>Sáb: 9:00–17:00</span>
-                        </div>
-                        <div class="footer-contacto-item">
-                            <span class="footer-contacto-item__icono">✉️</span>
-                            <span class="footer-contacto-item__texto"><a href="mailto:fusionpeluqueria@email.com">fusionpeluqueria@email.com</a></span>
-                        </div>
+    <!-- FOOTER -->
+    <footer class="footer-pro">
+        <div class="contenedor">
+            <div class="footer-grid">
+                <div class="footer-marca">
+                    <span class="footer-marca__logo">Fusión<span>Peluquería</span></span>
+                    <p class="footer-marca__desc">15 años transformando cabellos y conquistando confianzas en San Miguel, Buenos Aires.</p>
+                    <div class="footer-redes">
+                        <a href="#" class="footer-red" title="Instagram">📸</a>
+                        <a href="#" class="footer-red" title="WhatsApp">💬</a>
+                        <a href="#" class="footer-red" title="Facebook">📘</a>
                     </div>
                 </div>
-                <div class="footer-bottom">
-                    <p class="footer-bottom__copy">© 2024 Fusión Peluquería · Todos los derechos reservados</p>
-                    <div class="footer-bottom__links">
-                        <a href="#">Política de privacidad</a>
-                        <a href="contacto.html">Contacto</a>
+                <div class="footer-col">
+                    <h4>Páginas</h4>
+                    <ul>
+                        <li><a href="index.html">Inicio</a></li>
+                        <li><a href="nosotros.html">Nosotros</a></li>
+                        <li><a href="productos.html">Productos</a></li>
+                        <li><a href="turnos.html">Reservar turno</a></li>
+                        <li><a href="contacto.html">Contacto</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Servicios</h4>
+                    <ul>
+                        <li><a href="servicios.html">Corte & Peinado</a></li>
+                        <li><a href="servicios.html">Coloración</a></li>
+                        <li><a href="servicios.html">Keratina</a></li>
+                        <li><a href="servicios.html">Manicuría</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contacto">
+                    <h4>Contacto</h4>
+                    <div class="footer-contacto-item">
+                        <span class="footer-contacto-item__icono">📍</span>
+                        <span class="footer-contacto-item__texto">José María Paz 1612,<br>San Miguel, Buenos Aires</span>
+                    </div>
+                    <div class="footer-contacto-item">
+                        <span class="footer-contacto-item__icono">📞</span>
+                        <span class="footer-contacto-item__texto"><a href="tel:+5491173668263">11 7366-8263</a></span>
+                    </div>
+                    <div class="footer-contacto-item">
+                        <span class="footer-contacto-item__icono">🕐</span>
+                        <span class="footer-contacto-item__texto">Lun–Vie: 9:00–19:00<br>Sáb: 9:00–17:00</span>
                     </div>
                 </div>
             </div>
-        </footer>
+            <div class="footer-bottom">
+                <p class="footer-bottom__copy">© 2024 Fusión Peluquería · Todos los derechos reservados</p>
+                <div class="footer-bottom__links">
+                    <a href="contacto.html">Contacto</a>
+                </div>
+            </div>
+        </div>
+    </footer>
 
-    </main>
- <script>
+    <!-- Botón flotante carrito -->
+    <div class="carrito-fab">
+        <button id="btn-abrir-carrito" title="Ver carrito">
+            🛒
+            <span class="carrito-badge oculto" id="carrito-badge">0</span>
+        </button>
+    </div>
+
+    <script>
     // ══════════════════════════════════════════
-    // CONFIGURACIÓN — editá estos datos
+    // CONFIGURACIÓN
     // ══════════════════════════════════════════
     const CONFIG = {
-        whatsappNumero: '5491100000000',   // ← Tu número con código de país, sin + ni espacios
-        formspreeUrl: 'https://formspree.io/f/xyzyjlky', // ← Tu endpoint de Formspree
-        mercadoPagoLink: 'https://link.mercadopago.com.ar/fusion' // ← Tu link de pago MP
+        whatsappNumero: '5491173668263',
+        formspreeUrl: 'https://formspree.io/f/xyzyjlky',
+        mercadoPagoLink: 'https://link.mercadopago.com.ar/fusion'
     };
- 
+
     // ══════════════════════════════════════════
     // CARRITO
     // ══════════════════════════════════════════
     let carrito = [];
     let metodoPago = 'mercadopago';
- 
-    // Cargar productos desde JSON
+
     async function cargarProductos() {
         try {
             const res = await fetch('./productos.json');
             const productos = await res.json();
+            window._productos = productos;
             renderizarProductos(productos);
             generarFiltros(productos);
         } catch (e) {
             console.error('Error cargando productos:', e);
-            document.getElementById('productos-grid').innerHTML =
-                '<p style="text-align:center;color:#999;padding:40px;">No se pudieron cargar los productos.</p>';
+            document.getElementById('productos-lista').innerHTML =
+                '<p style="text-align:center;color:#999;padding:40px;grid-column:1/-1;">No se pudieron cargar los productos.</p>';
         }
     }
- 
+
     function renderizarProductos(productos, filtro = 'Todos') {
-        const grid = document.getElementById('productos-grid');
+        const grid = document.getElementById('productos-lista');
         const lista = filtro === 'Todos' ? productos : productos.filter(p => p.categoria === filtro);
+        document.getElementById('productos-count').textContent = `${lista.length} producto${lista.length !== 1 ? 's' : ''}`;
         grid.innerHTML = lista.map(p => `
-            <div class="producto-card" data-id="${p.id}">
-                <img src="${p.imagen}" alt="${p.nombre}"
-                     onerror="this.src='https://via.placeholder.com/300x300?text=${encodeURIComponent(p.nombre)}'">
-                <div class="producto-info">
-                    <div class="producto-categoria">${p.categoria}</div>
-                    <div class="producto-nombre">${p.nombre}</div>
-                    <div class="producto-descripcion">${p.descripcion}</div>
-                    <div class="producto-footer">
-                        <span class="producto-precio">$${p.precio.toLocaleString('es-AR')}</span>
-                        <button class="btn-agregar" onclick="agregarAlCarrito(${JSON.stringify(p).replace(/"/g, '&quot;')})">
-                            Agregar
-                        </button>
-                    </div>
+            <div class="card" data-id="${p.id}">
+                <div class="card__imagen">
+                    <img src="${p.imagen}" alt="${p.nombre}"
+                         onerror="this.src='https://placehold.co/300x300/f4f4f2/666?text=${encodeURIComponent(p.nombre)}'">
+                </div>
+                <div class="card__body">
+                    <div class="card__nombre">${p.nombre}</div>
+                    <div class="card__descripcion">${p.descripcion}</div>
+                </div>
+                <div class="card__footer">
+                    <div class="card__precio">$${p.precio.toLocaleString('es-AR')}</div>
+                    <button class="btn-agregar" onclick='agregarAlCarrito(${JSON.stringify(p)})'>
+                        + Agregar
+                    </button>
                 </div>
             </div>
         `).join('');
+        // Animación
+        setTimeout(() => {
+            document.querySelectorAll('.card').forEach((el, i) => {
+                setTimeout(() => el.classList.add('visible'), i * 60);
+            });
+        }, 50);
     }
- 
+
     function generarFiltros(productos) {
         const categorias = [...new Set(productos.map(p => p.categoria))];
-        const cont = document.getElementById('filtros-productos');
+        const cont = document.getElementById('filtros-inner');
         categorias.forEach(cat => {
             const btn = document.createElement('button');
             btn.className = 'filtro-btn';
             btn.dataset.cat = cat;
             btn.textContent = cat;
-            btn.onclick = () => {
-                document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('activo'));
-                btn.classList.add('activo');
-                renderizarProductos(window._productos, cat);
-            };
+            btn.onclick = () => cambiarFiltro(cat);
             cont.appendChild(btn);
         });
-        // Guardar productos para filtros
-        window._productos = productos;
-        // Primer filtro "Todos"
-        document.querySelector('.filtro-btn[data-cat="Todos"]').onclick = () => {
-            document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('activo'));
-            document.querySelector('.filtro-btn[data-cat="Todos"]').classList.add('activo');
-            renderizarProductos(window._productos, 'Todos');
-        };
+        document.querySelector('.filtro-btn[data-cat="Todos"]').onclick = () => cambiarFiltro('Todos');
     }
- 
+
+    function cambiarFiltro(cat) {
+        document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('activo'));
+        document.querySelector(`.filtro-btn[data-cat="${cat}"]`).classList.add('activo');
+        renderizarProductos(window._productos, cat);
+    }
+
     function agregarAlCarrito(producto) {
         const existe = carrito.find(i => i.id === producto.id);
-        if (existe) {
-            existe.cantidad++;
-        } else {
-            carrito.push({ ...producto, cantidad: 1 });
-        }
+        if (existe) { existe.cantidad++; }
+        else { carrito.push({ ...producto, cantidad: 1 }); }
         actualizarCarritoUI();
-        // Feedback visual en botón
-        const btns = document.querySelectorAll(`.producto-card[data-id="${producto.id}"] .btn-agregar`);
-        btns.forEach(btn => {
+        // Feedback en botón
+        document.querySelectorAll(`.card[data-id="${producto.id}"] .btn-agregar`).forEach(btn => {
             btn.textContent = '✓ Agregado';
             btn.classList.add('agregado');
-            setTimeout(() => {
-                btn.textContent = 'Agregar';
-                btn.classList.remove('agregado');
-            }, 1500);
+            setTimeout(() => { btn.textContent = '+ Agregar'; btn.classList.remove('agregado'); }, 1500);
         });
     }
- 
+
     function cambiarCantidad(id, delta) {
         const item = carrito.find(i => i.id === id);
         if (!item) return;
@@ -866,47 +990,39 @@
         if (item.cantidad <= 0) carrito = carrito.filter(i => i.id !== id);
         actualizarCarritoUI();
     }
- 
+
     function eliminarItem(id) {
         carrito = carrito.filter(i => i.id !== id);
         actualizarCarritoUI();
     }
- 
-    function vaciarCarrito() {
-        carrito = [];
-        actualizarCarritoUI();
-    }
- 
+
     function totalCarrito() {
         return carrito.reduce((acc, i) => acc + i.precio * i.cantidad, 0);
     }
- 
+
     function actualizarCarritoUI() {
         const total = totalCarrito();
         const cantidad = carrito.reduce((a, i) => a + i.cantidad, 0);
- 
-        // Badge
         const badge = document.getElementById('carrito-badge');
         badge.textContent = cantidad;
         badge.classList.toggle('oculto', cantidad === 0);
- 
-        // Items
+
         const cont = document.getElementById('carrito-items');
         const footer = document.getElementById('carrito-footer');
         const vacio = document.getElementById('carrito-vacio');
- 
+
         if (carrito.length === 0) {
-            vacio.style.display = 'block';
-            footer.style.display = 'none';
             cont.innerHTML = '';
             cont.appendChild(vacio);
+            vacio.style.display = 'block';
+            footer.style.display = 'none';
         } else {
             vacio.style.display = 'none';
             footer.style.display = 'block';
             cont.innerHTML = carrito.map(i => `
                 <div class="carrito-item">
                     <img src="${i.imagen}" alt="${i.nombre}"
-                         onerror="this.src='https://via.placeholder.com/60x60?text=img'">
+                         onerror="this.src='https://placehold.co/60x60/f4f4f2/666?text=img'">
                     <div class="item-info">
                         <div class="item-nombre">${i.nombre}</div>
                         <div class="item-precio">$${(i.precio * i.cantidad).toLocaleString('es-AR')}</div>
@@ -916,18 +1032,14 @@
                         <span class="item-cantidad">${i.cantidad}</span>
                         <button onclick="cambiarCantidad(${i.id}, 1)">+</button>
                     </div>
-                    <button class="btn-eliminar-item" onclick="eliminarItem(${i.id})" title="Eliminar">×</button>
+                    <button class="btn-eliminar-item" onclick="eliminarItem(${i.id})">×</button>
                 </div>
             `).join('');
         }
- 
-        document.getElementById('carrito-total-monto').textContent =
-            '$' + total.toLocaleString('es-AR');
+        document.getElementById('carrito-total-monto').textContent = '$' + total.toLocaleString('es-AR');
     }
- 
-    // ══════════════════════════════════════════
-    // APERTURA / CIERRE CARRITO
-    // ══════════════════════════════════════════
+
+    // Panel carrito
     function abrirCarrito() {
         document.getElementById('carrito-panel').classList.add('abierto');
         document.getElementById('overlay-carrito').classList.add('visible');
@@ -938,157 +1050,80 @@
         document.getElementById('overlay-carrito').classList.remove('visible');
         document.body.style.overflow = '';
     }
- 
+
     document.getElementById('btn-abrir-carrito').addEventListener('click', abrirCarrito);
     document.getElementById('btn-cerrar-carrito').addEventListener('click', cerrarCarrito);
     document.getElementById('overlay-carrito').addEventListener('click', cerrarCarrito);
-    document.getElementById('btn-vaciar').addEventListener('click', vaciarCarrito);
- 
-    // ══════════════════════════════════════════
-    // CHECKOUT
-    // ══════════════════════════════════════════
+    document.getElementById('btn-vaciar').addEventListener('click', () => { carrito = []; actualizarCarritoUI(); });
+
+    // Checkout
     document.getElementById('btn-checkout').addEventListener('click', () => {
         cerrarCarrito();
-        // Armar resumen
-        const resumen = document.getElementById('modal-resumen');
         const total = totalCarrito();
-        resumen.innerHTML =
-            carrito.map(i => `
-                <div class="modal-resumen-item">
-                    <span>${i.nombre} x${i.cantidad}</span>
-                    <span>$${(i.precio * i.cantidad).toLocaleString('es-AR')}</span>
-                </div>
-            `).join('') +
-            `<div class="modal-resumen-total">
-                <span>Total</span>
-                <span>$${total.toLocaleString('es-AR')}</span>
-            </div>`;
+        document.getElementById('modal-resumen').innerHTML =
+            carrito.map(i => `<div class="modal-resumen-item"><span>${i.nombre} x${i.cantidad}</span><span>$${(i.precio*i.cantidad).toLocaleString('es-AR')}</span></div>`).join('') +
+            `<div class="modal-resumen-total"><span>Total</span><span>$${total.toLocaleString('es-AR')}</span></div>`;
         document.getElementById('modal-overlay').classList.add('visible');
         document.getElementById('checkout-form').style.display = 'block';
         document.getElementById('compra-confirmada').classList.remove('visible');
         document.body.style.overflow = 'hidden';
     });
- 
+
     document.getElementById('modal-cerrar').addEventListener('click', () => {
         document.getElementById('modal-overlay').classList.remove('visible');
         document.body.style.overflow = '';
     });
- 
-    // Selección método de pago
+
     function seleccionarMetodo(el) {
         document.querySelectorAll('.metodo-opcion').forEach(o => o.classList.remove('seleccionado'));
         el.classList.add('seleccionado');
         metodoPago = el.dataset.metodo;
         document.getElementById('info-transferencia').classList.toggle('visible', metodoPago === 'transferencia');
     }
- 
-    // Confirmar pedido
+
     document.getElementById('btn-confirmar').addEventListener('click', async () => {
         const nombre = document.getElementById('c-nombre').value.trim();
         const email = document.getElementById('c-email').value.trim();
         const tel = document.getElementById('c-tel').value.trim();
- 
-        if (!nombre || !email || !tel) {
-            alert('Por favor completá todos los campos.');
-            return;
-        }
- 
+        if (!nombre || !email || !tel) { alert('Por favor completá todos los campos.'); return; }
+
         const btn = document.getElementById('btn-confirmar');
-        btn.disabled = true;
-        btn.textContent = 'Enviando...';
- 
+        btn.disabled = true; btn.textContent = 'Enviando...';
+
         const total = totalCarrito();
-        const resumenTexto = carrito.map(i => `${i.nombre} x${i.cantidad} = $${(i.precio * i.cantidad).toLocaleString('es-AR')}`).join('\n');
- 
-        // Notificación por email (Formspree)
+        const resumenTexto = carrito.map(i => `${i.nombre} x${i.cantidad} = $${(i.precio*i.cantidad).toLocaleString('es-AR')}`).join('\n');
+
         try {
             await fetch(CONFIG.formspreeUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-                body: JSON.stringify({
-                    tipo: '🛒 Nueva compra en Fusión',
-                    cliente: nombre,
-                    email,
-                    telefono: tel,
+                body: JSON.stringify({ tipo: '🛒 Nueva compra en Fusión', cliente: nombre, email, telefono: tel,
                     metodo_pago: metodoPago === 'mercadopago' ? 'Mercado Pago' : 'Transferencia',
-                    productos: resumenTexto,
-                    total: `$${total.toLocaleString('es-AR')}`
-                })
+                    productos: resumenTexto, total: `$${total.toLocaleString('es-AR')}` })
             });
-        } catch (e) { console.warn('Formspree error:', e); }
- 
-        // Mensaje WhatsApp para el cliente
+        } catch(e) { console.warn('Formspree:', e); }
+
         const msgWsp = encodeURIComponent(
-            `Hola Fusión! 👋 Acabo de hacer un pedido:\n\n` +
-            carrito.map(i => `• ${i.nombre} x${i.cantidad} — $${(i.precio * i.cantidad).toLocaleString('es-AR')}`).join('\n') +
-            `\n\n*Total: $${total.toLocaleString('es-AR')}*\n` +
-            `Nombre: ${nombre}\n` +
-            `Medio de pago: ${metodoPago === 'mercadopago' ? 'Mercado Pago' : 'Transferencia'}`
+            `Hola Fusión! 👋 Quiero confirmar mi pedido:\n\n` +
+            carrito.map(i => `• ${i.nombre} x${i.cantidad} — $${(i.precio*i.cantidad).toLocaleString('es-AR')}`).join('\n') +
+            `\n\n*Total: $${total.toLocaleString('es-AR')}*\nNombre: ${nombre}\nPago: ${metodoPago === 'mercadopago' ? 'Mercado Pago' : 'Transferencia'}`
         );
- 
         document.getElementById('wsp-compra').href = `https://wa.me/${CONFIG.whatsappNumero}?text=${msgWsp}`;
- 
+
         if (metodoPago === 'mercadopago') {
-            document.getElementById('msg-confirmacion').textContent =
-                'Te redirigimos a Mercado Pago para completar el pago. También podés confirmar por WhatsApp.';
-            setTimeout(() => { window.open(CONFIG.mercadoPagoLink, '_blank'); }, 800);
+            document.getElementById('msg-confirmacion').textContent = 'Te redirigimos a Mercado Pago. También podés confirmar por WhatsApp.';
+            setTimeout(() => window.open(CONFIG.mercadoPagoLink, '_blank'), 800);
         } else {
-            document.getElementById('msg-confirmacion').textContent =
-                'Realizá la transferencia y envianos el comprobante por WhatsApp para confirmar tu pedido.';
+            document.getElementById('msg-confirmacion').textContent = 'Realizá la transferencia y envianos el comprobante por WhatsApp.';
         }
- 
+
         document.getElementById('checkout-form').style.display = 'none';
         document.getElementById('compra-confirmada').classList.add('visible');
-        carrito = [];
-        actualizarCarritoUI();
-        btn.disabled = false;
-        btn.textContent = 'Confirmar pedido';
+        carrito = []; actualizarCarritoUI();
+        btn.disabled = false; btn.textContent = 'Confirmar pedido';
     });
- 
-    // Init
+
     cargarProductos();
-    </script>
- 
-</body>
-</html>
- 
-   
-
-    <script>
-        // ── Filtros ──────────────────────────────
-        document.querySelectorAll('.filtro-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('activo'));
-                btn.classList.add('activo');
-
-                const filtro = btn.dataset.filtro;
-                const cards = document.querySelectorAll('.card');
-                let visibles = 0;
-
-                cards.forEach(card => {
-                    const tags = card.dataset.tags || '';
-                    const mostrar = filtro === 'todos' || tags.includes(filtro);
-                    card.style.display = mostrar ? 'flex' : 'none';
-                    if (mostrar) visibles++;
-                });
-
-                document.getElementById('productos-count').textContent = `${visibles} producto${visibles !== 1 ? 's' : ''}`;
-            });
-        });
-
-        // ── Animación de cards ───────────────────
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry, i) => {
-                if (entry.isIntersecting) {
-                    setTimeout(() => entry.target.classList.add('visible'), i * 80);
-                }
-            });
-        }, { threshold: 0.05 });
-
-        // Observar cards después de que el JS las cree
-        setTimeout(() => {
-            document.querySelectorAll('.card').forEach(el => observer.observe(el));
-        }, 100);
     </script>
 
 </body>
