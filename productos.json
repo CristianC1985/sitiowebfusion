@@ -1,11 +1,11 @@
 [
   {
     "id": 1,
-    "nombre": "Shampoo Hidratante",
+    "nombre": "Máscara de Argán Fidelite",
     "descripcion": "Shampoo profesional para cabello seco y dañado.",
     "precio": 3500,
     "categoria": "Shampoo",
-    "imagen": "img/productos/shampoo-hidratante.jpg"
+    "imagen": "img/productos/argan-fidelite.png"
   },
   {
     "id": 2,

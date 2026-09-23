@@ -4,12 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Productos - Fusión Peluquería</title>
-    <link rel="stylesheet" href="/style/style.css">
-    <link rel="preload" href="css/normalize.css" as="style">
-    <link rel="stylesheet" href="css/normalize.css">
+    <title>Productos - Fusión Peluquería</title>  
+       
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;1,400&family=PT+Sans:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+   
+    <link rel="stylesheet" href="./style/style.css">
 
     <style>
         :root {
@@ -763,8 +762,297 @@
         </footer>
 
     </main>
-
-    <script src="js/script.js"></script>
+ <script>
+    // ══════════════════════════════════════════
+    // CONFIGURACIÓN — editá estos datos
+    // ══════════════════════════════════════════
+    const CONFIG = {
+        whatsappNumero: '5491100000000',   // ← Tu número con código de país, sin + ni espacios
+        formspreeUrl: 'https://formspree.io/f/xyzyjlky', // ← Tu endpoint de Formspree
+        mercadoPagoLink: 'https://link.mercadopago.com.ar/fusion' // ← Tu link de pago MP
+    };
+ 
+    // ══════════════════════════════════════════
+    // CARRITO
+    // ══════════════════════════════════════════
+    let carrito = [];
+    let metodoPago = 'mercadopago';
+ 
+    // Cargar productos desde JSON
+    async function cargarProductos() {
+        try {
+            const res = await fetch('./productos.json');
+            const productos = await res.json();
+            renderizarProductos(productos);
+            generarFiltros(productos);
+        } catch (e) {
+            console.error('Error cargando productos:', e);
+            document.getElementById('productos-grid').innerHTML =
+                '<p style="text-align:center;color:#999;padding:40px;">No se pudieron cargar los productos.</p>';
+        }
+    }
+ 
+    function renderizarProductos(productos, filtro = 'Todos') {
+        const grid = document.getElementById('productos-grid');
+        const lista = filtro === 'Todos' ? productos : productos.filter(p => p.categoria === filtro);
+        grid.innerHTML = lista.map(p => `
+            <div class="producto-card" data-id="${p.id}">
+                <img src="${p.imagen}" alt="${p.nombre}"
+                     onerror="this.src='https://via.placeholder.com/300x300?text=${encodeURIComponent(p.nombre)}'">
+                <div class="producto-info">
+                    <div class="producto-categoria">${p.categoria}</div>
+                    <div class="producto-nombre">${p.nombre}</div>
+                    <div class="producto-descripcion">${p.descripcion}</div>
+                    <div class="producto-footer">
+                        <span class="producto-precio">$${p.precio.toLocaleString('es-AR')}</span>
+                        <button class="btn-agregar" onclick="agregarAlCarrito(${JSON.stringify(p).replace(/"/g, '&quot;')})">
+                            Agregar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+ 
+    function generarFiltros(productos) {
+        const categorias = [...new Set(productos.map(p => p.categoria))];
+        const cont = document.getElementById('filtros-productos');
+        categorias.forEach(cat => {
+            const btn = document.createElement('button');
+            btn.className = 'filtro-btn';
+            btn.dataset.cat = cat;
+            btn.textContent = cat;
+            btn.onclick = () => {
+                document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('activo'));
+                btn.classList.add('activo');
+                renderizarProductos(window._productos, cat);
+            };
+            cont.appendChild(btn);
+        });
+        // Guardar productos para filtros
+        window._productos = productos;
+        // Primer filtro "Todos"
+        document.querySelector('.filtro-btn[data-cat="Todos"]').onclick = () => {
+            document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('activo'));
+            document.querySelector('.filtro-btn[data-cat="Todos"]').classList.add('activo');
+            renderizarProductos(window._productos, 'Todos');
+        };
+    }
+ 
+    function agregarAlCarrito(producto) {
+        const existe = carrito.find(i => i.id === producto.id);
+        if (existe) {
+            existe.cantidad++;
+        } else {
+            carrito.push({ ...producto, cantidad: 1 });
+        }
+        actualizarCarritoUI();
+        // Feedback visual en botón
+        const btns = document.querySelectorAll(`.producto-card[data-id="${producto.id}"] .btn-agregar`);
+        btns.forEach(btn => {
+            btn.textContent = '✓ Agregado';
+            btn.classList.add('agregado');
+            setTimeout(() => {
+                btn.textContent = 'Agregar';
+                btn.classList.remove('agregado');
+            }, 1500);
+        });
+    }
+ 
+    function cambiarCantidad(id, delta) {
+        const item = carrito.find(i => i.id === id);
+        if (!item) return;
+        item.cantidad += delta;
+        if (item.cantidad <= 0) carrito = carrito.filter(i => i.id !== id);
+        actualizarCarritoUI();
+    }
+ 
+    function eliminarItem(id) {
+        carrito = carrito.filter(i => i.id !== id);
+        actualizarCarritoUI();
+    }
+ 
+    function vaciarCarrito() {
+        carrito = [];
+        actualizarCarritoUI();
+    }
+ 
+    function totalCarrito() {
+        return carrito.reduce((acc, i) => acc + i.precio * i.cantidad, 0);
+    }
+ 
+    function actualizarCarritoUI() {
+        const total = totalCarrito();
+        const cantidad = carrito.reduce((a, i) => a + i.cantidad, 0);
+ 
+        // Badge
+        const badge = document.getElementById('carrito-badge');
+        badge.textContent = cantidad;
+        badge.classList.toggle('oculto', cantidad === 0);
+ 
+        // Items
+        const cont = document.getElementById('carrito-items');
+        const footer = document.getElementById('carrito-footer');
+        const vacio = document.getElementById('carrito-vacio');
+ 
+        if (carrito.length === 0) {
+            vacio.style.display = 'block';
+            footer.style.display = 'none';
+            cont.innerHTML = '';
+            cont.appendChild(vacio);
+        } else {
+            vacio.style.display = 'none';
+            footer.style.display = 'block';
+            cont.innerHTML = carrito.map(i => `
+                <div class="carrito-item">
+                    <img src="${i.imagen}" alt="${i.nombre}"
+                         onerror="this.src='https://via.placeholder.com/60x60?text=img'">
+                    <div class="item-info">
+                        <div class="item-nombre">${i.nombre}</div>
+                        <div class="item-precio">$${(i.precio * i.cantidad).toLocaleString('es-AR')}</div>
+                    </div>
+                    <div class="item-controles">
+                        <button onclick="cambiarCantidad(${i.id}, -1)">−</button>
+                        <span class="item-cantidad">${i.cantidad}</span>
+                        <button onclick="cambiarCantidad(${i.id}, 1)">+</button>
+                    </div>
+                    <button class="btn-eliminar-item" onclick="eliminarItem(${i.id})" title="Eliminar">×</button>
+                </div>
+            `).join('');
+        }
+ 
+        document.getElementById('carrito-total-monto').textContent =
+            '$' + total.toLocaleString('es-AR');
+    }
+ 
+    // ══════════════════════════════════════════
+    // APERTURA / CIERRE CARRITO
+    // ══════════════════════════════════════════
+    function abrirCarrito() {
+        document.getElementById('carrito-panel').classList.add('abierto');
+        document.getElementById('overlay-carrito').classList.add('visible');
+        document.body.style.overflow = 'hidden';
+    }
+    function cerrarCarrito() {
+        document.getElementById('carrito-panel').classList.remove('abierto');
+        document.getElementById('overlay-carrito').classList.remove('visible');
+        document.body.style.overflow = '';
+    }
+ 
+    document.getElementById('btn-abrir-carrito').addEventListener('click', abrirCarrito);
+    document.getElementById('btn-cerrar-carrito').addEventListener('click', cerrarCarrito);
+    document.getElementById('overlay-carrito').addEventListener('click', cerrarCarrito);
+    document.getElementById('btn-vaciar').addEventListener('click', vaciarCarrito);
+ 
+    // ══════════════════════════════════════════
+    // CHECKOUT
+    // ══════════════════════════════════════════
+    document.getElementById('btn-checkout').addEventListener('click', () => {
+        cerrarCarrito();
+        // Armar resumen
+        const resumen = document.getElementById('modal-resumen');
+        const total = totalCarrito();
+        resumen.innerHTML =
+            carrito.map(i => `
+                <div class="modal-resumen-item">
+                    <span>${i.nombre} x${i.cantidad}</span>
+                    <span>$${(i.precio * i.cantidad).toLocaleString('es-AR')}</span>
+                </div>
+            `).join('') +
+            `<div class="modal-resumen-total">
+                <span>Total</span>
+                <span>$${total.toLocaleString('es-AR')}</span>
+            </div>`;
+        document.getElementById('modal-overlay').classList.add('visible');
+        document.getElementById('checkout-form').style.display = 'block';
+        document.getElementById('compra-confirmada').classList.remove('visible');
+        document.body.style.overflow = 'hidden';
+    });
+ 
+    document.getElementById('modal-cerrar').addEventListener('click', () => {
+        document.getElementById('modal-overlay').classList.remove('visible');
+        document.body.style.overflow = '';
+    });
+ 
+    // Selección método de pago
+    function seleccionarMetodo(el) {
+        document.querySelectorAll('.metodo-opcion').forEach(o => o.classList.remove('seleccionado'));
+        el.classList.add('seleccionado');
+        metodoPago = el.dataset.metodo;
+        document.getElementById('info-transferencia').classList.toggle('visible', metodoPago === 'transferencia');
+    }
+ 
+    // Confirmar pedido
+    document.getElementById('btn-confirmar').addEventListener('click', async () => {
+        const nombre = document.getElementById('c-nombre').value.trim();
+        const email = document.getElementById('c-email').value.trim();
+        const tel = document.getElementById('c-tel').value.trim();
+ 
+        if (!nombre || !email || !tel) {
+            alert('Por favor completá todos los campos.');
+            return;
+        }
+ 
+        const btn = document.getElementById('btn-confirmar');
+        btn.disabled = true;
+        btn.textContent = 'Enviando...';
+ 
+        const total = totalCarrito();
+        const resumenTexto = carrito.map(i => `${i.nombre} x${i.cantidad} = $${(i.precio * i.cantidad).toLocaleString('es-AR')}`).join('\n');
+ 
+        // Notificación por email (Formspree)
+        try {
+            await fetch(CONFIG.formspreeUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify({
+                    tipo: '🛒 Nueva compra en Fusión',
+                    cliente: nombre,
+                    email,
+                    telefono: tel,
+                    metodo_pago: metodoPago === 'mercadopago' ? 'Mercado Pago' : 'Transferencia',
+                    productos: resumenTexto,
+                    total: `$${total.toLocaleString('es-AR')}`
+                })
+            });
+        } catch (e) { console.warn('Formspree error:', e); }
+ 
+        // Mensaje WhatsApp para el cliente
+        const msgWsp = encodeURIComponent(
+            `Hola Fusión! 👋 Acabo de hacer un pedido:\n\n` +
+            carrito.map(i => `• ${i.nombre} x${i.cantidad} — $${(i.precio * i.cantidad).toLocaleString('es-AR')}`).join('\n') +
+            `\n\n*Total: $${total.toLocaleString('es-AR')}*\n` +
+            `Nombre: ${nombre}\n` +
+            `Medio de pago: ${metodoPago === 'mercadopago' ? 'Mercado Pago' : 'Transferencia'}`
+        );
+ 
+        document.getElementById('wsp-compra').href = `https://wa.me/${CONFIG.whatsappNumero}?text=${msgWsp}`;
+ 
+        if (metodoPago === 'mercadopago') {
+            document.getElementById('msg-confirmacion').textContent =
+                'Te redirigimos a Mercado Pago para completar el pago. También podés confirmar por WhatsApp.';
+            setTimeout(() => { window.open(CONFIG.mercadoPagoLink, '_blank'); }, 800);
+        } else {
+            document.getElementById('msg-confirmacion').textContent =
+                'Realizá la transferencia y envianos el comprobante por WhatsApp para confirmar tu pedido.';
+        }
+ 
+        document.getElementById('checkout-form').style.display = 'none';
+        document.getElementById('compra-confirmada').classList.add('visible');
+        carrito = [];
+        actualizarCarritoUI();
+        btn.disabled = false;
+        btn.textContent = 'Confirmar pedido';
+    });
+ 
+    // Init
+    cargarProductos();
+    </script>
+ 
+</body>
+</html>
+ 
+   
 
     <script>
         // ── Filtros ──────────────────────────────
