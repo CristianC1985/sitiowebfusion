@@ -223,7 +223,10 @@
                     <h1>Dashboard</h1>
                     <p id="dash-fecha"></p>
                 </div>
-                <button class="btn btn-primary" onclick="abrirModalTurno()">+ Nuevo turno</button>
+                <div style="display:flex;gap:10px;flex-wrap:wrap">
+                    <button class="btn btn-wsp" onclick="recordatoriosMasivos()">💬 Recordatorios de mañana</button>
+                    <button class="btn btn-primary" onclick="abrirModalTurno()">+ Nuevo turno</button>
+                </div>
             </div>
             <div class="stats-grid">
                 <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-num" id="stat-hoy">0</div><div class="stat-label">Turnos hoy</div></div>
@@ -295,6 +298,7 @@
                             <th>Servicio</th>
                             <th>Duración</th>
                             <th>Precio</th>
+                            <th>Profesionales</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -405,6 +409,11 @@
         <div class="form-group">
             <label>Descripción (opcional)</label>
             <textarea id="srv-descripcion" placeholder="Descripción breve del servicio"></textarea>
+        </div>
+        <div class="form-group">
+            <label>¿Quién realiza este servicio?</label>
+            <p style="font-size:12px;color:#aaa;margin-bottom:8px">Seleccioná los profesionales que lo ofrecen</p>
+            <div class="servicios-check" id="srv-profesionales-check"></div>
         </div>
         <div style="display:flex;gap:10px;margin-top:8px">
             <button class="btn btn-ghost" style="flex:1" onclick="cerrarModal('modal-servicio')">Cancelar</button>
@@ -572,17 +581,26 @@ async function cargarServicios() {
 function renderTablaServicios() {
     const tbody = document.getElementById('tabla-servicios');
     if (!servicios.length) { tbody.innerHTML = '<tr><td colspan="4"><div class="empty"><span>✂️</span><p>No hay servicios. Agregá el primero.</p></div></td></tr>'; return; }
-    tbody.innerHTML = servicios.map(s => `
-        <tr>
-            <td><strong>${s.nombre}</strong>${s.descripcion ? `<br><span style="color:#888;font-size:12px">${s.descripcion}</span>` : ''}</td>
+    tbody.innerHTML = servicios.map(s => {
+        // Profesionales que tienen este servicio
+        const profsDelSrv = profesionales.filter(p => (p.servicios||[]).includes(s.id));
+        const profsStr = profsDelSrv.length
+            ? profsDelSrv.map(p => `<span style="display:inline-block;background:#f0f0ee;border-radius:50px;padding:2px 10px;font-size:11px;margin:2px">${p.nombre}</span>`).join('')
+            : '<span style="color:#bbb;font-size:12px">Sin asignar</span>';
+        return `<tr>
+            <td>
+                <strong>${s.nombre}</strong>
+                ${s.descripcion ? `<br><span style="color:#888;font-size:12px">${s.descripcion}</span>` : ''}
+            </td>
             <td>${s.duracion} min</td>
             <td>$${Number(s.precio||0).toLocaleString('es-AR')}</td>
+            <td style="max-width:200px">${profsStr}</td>
             <td>
                 <button class="btn btn-ghost btn-sm" onclick="editarServicio('${s.id}')">✏️ Editar</button>
                 <button class="btn btn-danger btn-sm" style="margin-left:6px" onclick="eliminarServicio('${s.id}')">🗑</button>
             </td>
-        </tr>
-    `).join('');
+        </tr>`;
+    }).join('');
 }
 
 function renderChipsServicios() {
@@ -593,6 +611,19 @@ function renderChipsServicios() {
 
 window.toggleChip = (el) => el.classList.toggle('activo');
 
+// Render chips de profesionales en modal servicio
+function renderChipsProfesionalesEnServicio(profIdsActivos = []) {
+    const cont = document.getElementById('srv-profesionales-check');
+    if(!cont || !profesionales.length) {
+        if(cont) cont.innerHTML = '<span style="color:#bbb;font-size:13px">Primero agregá profesionales</span>';
+        return;
+    }
+    cont.innerHTML = profesionales.map(p =>
+        `<span class="srv-chip${profIdsActivos.includes(p.id)?' activo':''}"
+            data-prof-id="${p.id}" onclick="toggleChip(this)">${p.nombre}</span>`
+    ).join('');
+}
+
 window.abrirModalServicio = () => {
     document.getElementById('srv-id').value = '';
     document.getElementById('modal-srv-titulo').textContent = 'Nuevo Servicio';
@@ -600,6 +631,7 @@ window.abrirModalServicio = () => {
     document.getElementById('srv-duracion').value = '60';
     document.getElementById('srv-precio').value = '';
     document.getElementById('srv-descripcion').value = '';
+    renderChipsProfesionalesEnServicio([]);
     abrirModal('modal-servicio');
 };
 
@@ -612,6 +644,9 @@ window.editarServicio = (id) => {
     document.getElementById('srv-duracion').value = s.duracion;
     document.getElementById('srv-precio').value = s.precio || '';
     document.getElementById('srv-descripcion').value = s.descripcion || '';
+    // Marcar los profesionales que ya tienen este servicio
+    const profIdsActivos = profesionales.filter(p => (p.servicios||[]).includes(id)).map(p=>p.id);
+    renderChipsProfesionalesEnServicio(profIdsActivos);
     abrirModal('modal-servicio');
 };
 
@@ -624,19 +659,53 @@ window.guardarServicio = async () => {
         descripcion: document.getElementById('srv-descripcion').value.trim()
     };
     if(!data.nombre) { toast('Ingresá un nombre','error'); return; }
+
+    // Profesionales seleccionados en el modal
+    const profIdsSeleccionados = [...document.querySelectorAll('#srv-profesionales-check .srv-chip.activo')]
+        .map(c => c.dataset.profId);
+
     try {
-        if(id) { await setDoc(doc(db,'servicios',id), data); }
-        else { await addDoc(collection(db,'servicios'), data); }
+        let srvId = id;
+        if(id) {
+            await setDoc(doc(db,'servicios',id), data);
+        } else {
+            const ref = await addDoc(collection(db,'servicios'), data);
+            srvId = ref.id;
+        }
+
+        // Sincronizar profesionales: agregar/quitar este servicio según selección
+        for(const prof of profesionales) {
+            const srvActuales = new Set(prof.servicios||[]);
+            const debeEstar = profIdsSeleccionados.includes(prof.id);
+            const estaAhora = srvActuales.has(srvId);
+            if(debeEstar && !estaAhora) {
+                srvActuales.add(srvId);
+                await setDoc(doc(db,'profesionales',prof.id), {...prof, servicios:[...srvActuales]});
+            } else if(!debeEstar && estaAhora) {
+                srvActuales.delete(srvId);
+                await setDoc(doc(db,'profesionales',prof.id), {...prof, servicios:[...srvActuales]});
+            }
+        }
+
         cerrarModal('modal-servicio');
         await cargarServicios();
+        await cargarProfesionales();
         toast('Servicio guardado ✓','success');
-    } catch(e) { toast('Error al guardar','error'); }
+    } catch(e) { console.error(e); toast('Error al guardar','error'); }
 };
 
 window.eliminarServicio = async (id) => {
-    if(!confirm('¿Eliminar este servicio?')) return;
+    if(!confirm('¿Eliminar este servicio? También se quitará de los profesionales que lo tienen asignado.')) return;
+    // Quitar de todos los profesionales primero
+    for(const prof of profesionales) {
+        if((prof.servicios||[]).includes(id)) {
+            const nuevos = (prof.servicios||[]).filter(s=>s!==id);
+            await setDoc(doc(db,'profesionales',prof.id), {...prof, servicios:nuevos});
+        }
+    }
     await deleteDoc(doc(db,'servicios',id));
     await cargarServicios();
+    await cargarProfesionales();
     toast('Servicio eliminado','success');
 };
 
@@ -940,16 +1009,35 @@ window.eliminarTurno = async (id) => {
     toast('Turno eliminado','success');
 };
 
-// WhatsApp recordatorio
+// WhatsApp recordatorio con opciones
 window.enviarWsp = (id) => {
     const t = turnos.find(x => x.id===id);
     if(!t||!t.tel) { toast('El cliente no tiene WhatsApp registrado','error'); return; }
+
+    // Modal de elección de tipo de recordatorio
+    const tipo = confirm(
+        `¿Qué recordatorio querés enviar a ${t.cliente}?\n\n` +
+        `OK → Recordatorio de 1 DÍA ANTES\n` +
+        `Cancelar → Recordatorio de 1 HORA ANTES`
+    );
+    enviarRecordatorio(t, tipo ? '1dia' : '1hora');
+};
+
+function enviarRecordatorio(t, tipo) {
     const prof = profesionales.find(p=>p.id===t.profesionalId);
     const srv = servicios.find(s=>s.id===t.servicioId);
     const num = t.tel.replace(/\D/g,'');
     const numWsp = num.startsWith('54') ? num : `549${num.replace(/^0/,'')}`;
+
+    let intro = '';
+    if(tipo === '1dia') {
+        intro = `¡Hola ${t.cliente}! 👋 Te recordamos que *mañana* tenés turno en *Fusión Peluquería*:`;
+    } else {
+        intro = `¡Hola ${t.cliente}! 👋 Te recordamos que en *1 hora* tenés turno en *Fusión Peluquería*:`;
+    }
+
     const msg = encodeURIComponent(
-        `Hola ${t.cliente}! 👋\n\nTe recordamos tu turno en *Fusión Peluquería*:\n\n` +
+        `${intro}\n\n` +
         `📅 *Fecha:* ${formatFecha(t.fecha)}\n` +
         `🕐 *Hora:* ${t.hora}hs\n` +
         `✂️ *Servicio:* ${srv?.nombre||'Consultar'}\n` +
@@ -957,7 +1045,32 @@ window.enviarWsp = (id) => {
         `📍 José María Paz 1612, San Miguel\n\n` +
         `Si necesitás cambiar o cancelar tu turno, avisanos con anticipación. ¡Te esperamos! 💛`
     );
-    window.open(`https://wa.me/${numWsp}?text=${msg}`,'_blank');
+    window.open(`https://wa.me/${numWsp}?text=${msg}`, '_blank');
+    toast(`Recordatorio enviado a ${t.cliente} ✓`, 'success');
+}
+
+// Botón para mandar recordatorios a TODOS los turnos del día siguiente
+window.recordatoriosMasivos = () => {
+    const manana = new Date();
+    manana.setDate(manana.getDate() + 1);
+    const fechaManana = manana.toISOString().split('T')[0];
+    const turnosManana = turnos.filter(t => t.fecha === fechaManana && t.estado !== 'cancelado');
+
+    if(!turnosManana.length) { toast('No hay turnos para mañana','error'); return; }
+
+    if(!confirm(`¿Enviás recordatorio a ${turnosManana.length} cliente(s) con turno mañana?`)) return;
+
+    let enviados = 0;
+    turnosManana.forEach((t, i) => {
+        if(!t.tel) return;
+        setTimeout(() => {
+            enviarRecordatorio(t, '1dia');
+            enviados++;
+            if(enviados === turnosManana.filter(x=>x.tel).length) {
+                toast(`✓ Recordatorios enviados: ${enviados}`, 'success');
+            }
+        }, i * 1500); // 1.5s entre cada uno para no saturar
+    });
 };
 
 // ══════════════════════════════════════════════

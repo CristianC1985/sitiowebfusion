@@ -37,6 +37,13 @@
         .wizard-title{font-family:'Playfair Display',serif;font-size:2.8rem;color:var(--negro);margin-bottom:.5rem}
         .wizard-sub{font-size:1.5rem;color:#888;margin-bottom:3rem}
 
+        /* PRIMER DISPONIBLE */
+        .btn-primer-disp{display:flex;align-items:center;justify-content:center;gap:1rem;width:100%;padding:1.6rem;background:linear-gradient(135deg,#f8d470,#f0c040);color:var(--negro);border:none;border-radius:12px;font-size:1.5rem;font-weight:700;cursor:pointer;margin-bottom:2.4rem;font-family:'PT Sans',sans-serif;transition:all .25s;box-shadow:0 4px 16px rgba(248,212,112,.4)}
+        .btn-primer-disp:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(248,212,112,.5)}
+        .btn-primer-disp .icon{font-size:2rem}
+        .separador{display:flex;align-items:center;gap:1.2rem;margin-bottom:2.4rem;color:#aaa;font-size:1.3rem}
+        .separador::before,.separador::after{content:'';flex:1;height:1px;background:#eee}
+
         /* CARDS PROFESIONALES */
         .prof-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(18rem,1fr));gap:1.6rem;margin-bottom:3rem}
         .prof-card{border:2px solid #eee;border-radius:14px;padding:2rem;cursor:pointer;transition:all .25s;text-align:center}
@@ -175,7 +182,15 @@
         <!-- PASO 1: PROFESIONAL -->
         <div class="wizard-step activo" id="step-1">
             <p class="wizard-title">¿Con quién querés atenderte?</p>
-            <p class="wizard-sub">Elegí tu profesional preferido</p>
+            <p class="wizard-sub">Elegí tu profesional o dejanos asignarte el primero disponible</p>
+
+            <!-- BOTÓN PRIMER DISPONIBLE -->
+            <button class="btn-primer-disp" onclick="selPrimerDisponible()">
+                <span class="icon">⚡</span>
+                Primer profesional disponible
+            </button>
+            <div class="separador">o elegí uno</div>
+
             <div class="prof-grid" id="prof-grid">
                 <div class="empty"><span>⏳</span>Cargando profesionales...</div>
             </div>
@@ -266,255 +281,313 @@
     </footer>
 
     <!-- FIREBASE -->
-    <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, where }
-        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, query, where }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInAnonymously, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyCwB3Tpqe9EAPctSh4aB-aqf6xSUhm0Twc",
-        authDomain: "fusion-peluqueria-e62f1.firebaseapp.com",
-        projectId: "fusion-peluqueria-e62f1",
-        storageBucket: "fusion-peluqueria-e62f1.firebasestorage.app",
-        messagingSenderId: "1091187068496",
-        appId: "1:1091187068496:web:f0c0f0dca735960a0ccb55"
-    };
+const firebaseConfig = {
+    apiKey: "AIzaSyCwB3Tpqe9EAPctSh4aB-aqf6xSUhm0Twc",
+    authDomain: "fusion-peluqueria-e62f1.firebaseapp.com",
+    projectId: "fusion-peluqueria-e62f1",
+    storageBucket: "fusion-peluqueria-e62f1.firebasestorage.app",
+    messagingSenderId: "1091187068496",
+    appId: "1:1091187068496:web:f0c0f0dca735960a0ccb55"
+};
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const WSP_FUSION = '5491173668263';
 
-    const WSP_FUSION = '5491173668263';
+function asegurarAuth() {
+    return new Promise((resolve, reject) => {
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                resolve(user);
+            } else {
+                signInAnonymously(auth).catch(reject);
+            }
+        });
+    });
+}
 
-    // ── Estado ─────────────────────────────────
-    let profesionales = [], servicios = [], turnosExistentes = [];
-    let sel = { prof: null, srv: null, fecha: null, hora: null };
-    let calFecha = new Date();
+// ── Estado ─────────────────────────────────
+let profesionales = [], servicios = [], turnosExistentes = [];
+let sel = { prof: null, srv: null, fecha: null, hora: null };
+let calFecha = new Date();
 
-    // ── Carga inicial ──────────────────────────
-    async function init() {
-        const [snapP, snapS, snapT] = await Promise.all([
-            getDocs(collection(db,'profesionales')),
-            getDocs(collection(db,'servicios')),
-            getDocs(collection(db,'turnos'))
-        ]);
-        profesionales = snapP.docs.map(d=>({id:d.id,...d.data()}));
-        servicios = snapS.docs.map(d=>({id:d.id,...d.data()}));
-        turnosExistentes = snapT.docs.map(d=>({id:d.id,...d.data()}));
-        renderProfesionales();
-    }
+// ── Carga inicial ──────────────────────────
+async function init() {
+    await asegurarAuth();
+    const [snapP, snapS, snapT] = await Promise.all([
+        getDocs(collection(db,'profesionales')),
+        getDocs(collection(db,'servicios')),
+        getDocs(collection(db,'turnos'))
+    ]);
+    profesionales = snapP.docs.map(d=>({id:d.id,...d.data()}));
+    servicios = snapS.docs.map(d=>({id:d.id,...d.data()}));
+    turnosExistentes = snapT.docs.map(d=>({id:d.id,...d.data()}));
+    renderProfesionales();
+}
 
-    // ── PASO 1: Profesionales ──────────────────
-    function renderProfesionales() {
-        const grid = document.getElementById('prof-grid');
-        if(!profesionales.length) { grid.innerHTML = '<div class="empty"><span>💇</span>No hay profesionales disponibles.</div>'; return; }
-        grid.innerHTML = profesionales.map(p => `
-            <div class="prof-card" onclick="selProf('${p.id}')" id="pc-${p.id}">
-                <div class="prof-avatar">
-                    ${p.foto ? `<img src="${p.foto}" alt="${p.nombre}">` : '💇'}
-                </div>
-                <div class="prof-nombre">${p.nombre}</div>
-                <div class="prof-esp">${p.especialidad||''}</div>
+// ── PASO 1: Profesionales ──────────────────
+function renderProfesionales() {
+    const grid = document.getElementById('prof-grid');
+    if(!profesionales.length) { grid.innerHTML = '<div class="empty"><span>💇</span>No hay profesionales disponibles.</div>'; return; }
+    grid.innerHTML = profesionales.map(p => `
+        <div class="prof-card" onclick="selProf('${p.id}')" id="pc-${p.id}">
+            <div class="prof-avatar">
+                ${p.foto ? `<img src="${p.foto}" alt="${p.nombre}">` : '💇'}
             </div>
-        `).join('');
-    }
+            <div class="prof-nombre">${p.nombre}</div>
+            <div class="prof-esp">${p.especialidad||''}</div>
+        </div>
+    `).join('');
+}
 
-    window.selProf = (id) => {
-        sel.prof = profesionales.find(p=>p.id===id);
-        sel.srv = null; sel.fecha = null; sel.hora = null;
-        document.querySelectorAll('.prof-card').forEach(c=>c.classList.remove('seleccionado'));
-        document.getElementById(`pc-${id}`).classList.add('seleccionado');
-        document.getElementById('btn-paso2').disabled = false;
-    };
+window.selProf = (id) => {
+    sel.prof = profesionales.find(p=>p.id===id);
+    sel.srv = null; sel.fecha = null; sel.hora = null;
+    document.querySelectorAll('.prof-card').forEach(c=>c.classList.remove('seleccionado'));
+    document.getElementById(`pc-${id}`).classList.add('seleccionado');
+    document.getElementById('btn-paso2').disabled = false;
+};
 
-    // ── PASO 2: Servicios ──────────────────────
-    function renderServicios() {
-        document.getElementById('prof-sel-nombre').textContent = sel.prof?.nombre || '';
-        const grid = document.getElementById('srv-grid');
-        const srvDisp = servicios.filter(s => (sel.prof?.servicios||[]).includes(s.id));
-        if(!srvDisp.length) { grid.innerHTML = '<div class="empty"><span>✂️</span>Sin servicios configurados.</div>'; return; }
-        grid.innerHTML = srvDisp.map(s => `
-            <div class="srv-card" onclick="selSrv('${s.id}')" id="sc-${s.id}">
-                <div class="srv-nombre">${s.nombre}</div>
-                <div class="srv-detalle">⏱ ${s.duracion} minutos</div>
-                ${s.precio ? `<div class="srv-precio">$${Number(s.precio).toLocaleString('es-AR')}</div>` : ''}
-                ${s.descripcion ? `<div class="srv-detalle" style="margin-top:.6rem">${s.descripcion}</div>` : ''}
-            </div>
-        `).join('');
-    }
+// ── Primer profesional disponible ──────────
+window.selPrimerDisponible = () => {
+    const hoy = new Date();
+    const horaActual = `${String(hoy.getHours()).padStart(2,'0')}:${String(hoy.getMinutes()).padStart(2,'0')}`;
+    const fechaHoy = hoy.toISOString().split('T')[0];
+    const diaSem = hoy.getDay();
 
-    window.selSrv = (id) => {
-        sel.srv = servicios.find(s=>s.id===id);
-        document.querySelectorAll('.srv-card').forEach(c=>c.classList.remove('seleccionado'));
-        document.getElementById(`sc-${id}`).classList.add('seleccionado');
-        document.getElementById('btn-paso3').disabled = false;
-    };
-
-    // ── PASO 3: Calendario ─────────────────────
-    const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-
-    function renderCal() {
-        const hoy = new Date();
-        const year = calFecha.getFullYear();
-        const month = calFecha.getMonth();
-        document.getElementById('cal-mes').textContent = `${MESES[month]} ${year}`;
-        const primerDia = new Date(year,month,1).getDay();
-        const diasEnMes = new Date(year,month+1,0).getDate();
-
-        let html = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'].map(d=>`<div class="cal-lbl">${d}</div>`).join('');
-        for(let i=0;i<primerDia;i++) html += '<div class="cal-dia vacio"></div>';
-        for(let d=1;d<=diasEnMes;d++){
-            const fechaStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-            const diaSem = new Date(fechaStr+'T12:00').getDay();
-            const esHoy = d===hoy.getDate()&&month===hoy.getMonth()&&year===hoy.getFullYear();
-            const esPasado = new Date(fechaStr+'T23:59') < hoy && !esHoy;
-            const esLaboral = (sel.prof?.dias||[]).includes(diaSem);
-            const esSel = fechaStr===sel.fecha;
-            const cls = ['cal-dia',esHoy?'hoy':'',esSel?'seleccionado':'',esPasado?'pasado':'',!esLaboral?'no-laboral':''].filter(Boolean).join(' ');
-            const click = (!esPasado&&esLaboral) ? `onclick="selFecha('${fechaStr}')"` : '';
-            html += `<div class="${cls}" ${click}>${d}</div>`;
-        }
-        document.getElementById('cal-grid').innerHTML = html;
-    }
-
-    window.selFecha = async (fecha) => {
-        sel.fecha = fecha;
-        sel.hora = null;
-        document.getElementById('btn-paso4').disabled = true;
-        renderCal();
-        await renderHorarios(fecha);
-    };
-
-    async function renderHorarios(fecha) {
-        const wrap = document.getElementById('horarios-wrap');
-        const grid = document.getElementById('horarios-grid');
-        const titulo = document.getElementById('horarios-titulo');
-        wrap.style.display = 'block';
-        const [y,m,d] = fecha.split('-');
-        titulo.textContent = `Horarios disponibles — ${parseInt(d)} de ${MESES[parseInt(m)-1]}`;
-
-        const prof = sel.prof;
+    for(const prof of profesionales) {
+        if(!(prof.dias||[]).includes(diaSem)) continue;
         const slots = generarSlots(prof.horaInicio||'09:00', prof.horaFin||'19:00', prof.intervalo||60);
-        const ocupados = turnosExistentes.filter(t=>t.fecha===fecha&&t.profesionalId===prof.id&&t.estado!=='cancelado').map(t=>t.hora);
-        const disponibles = slots.filter(h=>!ocupados.includes(h));
-
-        if(!disponibles.length) { grid.innerHTML = '<p style="color:#aaa;font-size:1.4rem">Sin horarios disponibles para este día.</p>'; return; }
-        grid.innerHTML = disponibles.map(h=>`
-            <button class="horario-btn" onclick="selHora('${h}')" id="hb-${h.replace(':','-')}">${h}hs</button>
-        `).join('');
-    }
-
-    window.selHora = (hora) => {
-        sel.hora = hora;
-        document.querySelectorAll('.horario-btn').forEach(b=>b.classList.remove('seleccionado'));
-        document.getElementById(`hb-${hora.replace(':','-')}`).classList.add('seleccionado');
-        document.getElementById('btn-paso4').disabled = false;
-    };
-
-    function generarSlots(inicio,fin,intervalo){
-        const slots=[];
-        let [h,m]=inicio.split(':').map(Number);
-        const [hf,mf]=fin.split(':').map(Number);
-        const finMin=hf*60+mf;
-        while(h*60+m<finMin){
-            slots.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
-            m+=intervalo; h+=Math.floor(m/60); m%=60;
+        const ocupados = turnosExistentes
+            .filter(t=>t.fecha===fechaHoy && t.profesionalId===prof.id && t.estado!=='cancelado')
+            .map(t=>t.hora);
+        const libres = slots.filter(h => h >= horaActual && !ocupados.includes(h));
+        if(libres.length > 0) {
+            sel.prof = prof;
+            sel.srv = null; sel.fecha = fechaHoy; sel.hora = libres[0];
+            document.querySelectorAll('.prof-card').forEach(c=>c.classList.remove('seleccionado'));
+            const card = document.getElementById(`pc-${prof.id}`);
+            if(card) card.classList.add('seleccionado');
+            document.getElementById('btn-paso2').disabled = false;
+            alert(`✅ Asignamos a ${prof.nombre} — próximo turno libre: ${libres[0]}hs hoy.\n\nElegí el servicio para continuar.`);
+            irPaso(2);
+            return;
         }
-        return slots;
     }
+    alert('😕 No hay profesionales disponibles por el momento.\nPodés elegir uno y reservar para otro día.');
+};
 
-    window.cambiarMes = (delta) => {
-        calFecha = new Date(calFecha.getFullYear(), calFecha.getMonth()+delta, 1);
-        renderCal();
-    };
+// ── PASO 2: Servicios ──────────────────────
+function renderServicios() {
+    document.getElementById('prof-sel-nombre').textContent = sel.prof?.nombre || '';
+    const grid = document.getElementById('srv-grid');
+    const srvDisp = servicios.filter(s => (sel.prof?.servicios||[]).includes(s.id));
+    if(!srvDisp.length) { grid.innerHTML = '<div class="empty"><span>✂️</span>Sin servicios configurados.</div>'; return; }
+    grid.innerHTML = srvDisp.map(s => `
+        <div class="srv-card" onclick="selSrv('${s.id}')" id="sc-${s.id}">
+            <div class="srv-nombre">${s.nombre}</div>
+            <div class="srv-detalle">⏱ ${s.duracion} minutos</div>
+            ${s.precio ? `<div class="srv-precio">$${Number(s.precio).toLocaleString('es-AR')}</div>` : ''}
+            ${s.descripcion ? `<div class="srv-detalle" style="margin-top:.6rem">${s.descripcion}</div>` : ''}
+        </div>
+    `).join('');
+}
 
-    // ── PASO 4: Confirmar ──────────────────────
-    function renderResumen() {
+window.selSrv = (id) => {
+    sel.srv = servicios.find(s=>s.id===id);
+    document.querySelectorAll('.srv-card').forEach(c=>c.classList.remove('seleccionado'));
+    document.getElementById(`sc-${id}`).classList.add('seleccionado');
+    document.getElementById('btn-paso3').disabled = false;
+};
+
+// ── PASO 3: Calendario ─────────────────────
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+function renderCal() {
+    const hoy = new Date();
+    const year = calFecha.getFullYear();
+    const month = calFecha.getMonth();
+    document.getElementById('cal-mes').textContent = `${MESES[month]} ${year}`;
+    const primerDia = new Date(year,month,1).getDay();
+    const diasEnMes = new Date(year,month+1,0).getDate();
+
+    let html = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'].map(d=>`<div class="cal-lbl">${d}</div>`).join('');
+    for(let i=0;i<primerDia;i++) html += '<div class="cal-dia vacio"></div>';
+    for(let d=1;d<=diasEnMes;d++){
+        const fechaStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const diaSem = new Date(fechaStr+'T12:00').getDay();
+        const esHoy = d===hoy.getDate()&&month===hoy.getMonth()&&year===hoy.getFullYear();
+        const esPasado = new Date(fechaStr+'T23:59') < hoy && !esHoy;
+        const esLaboral = (sel.prof?.dias||[]).includes(diaSem);
+        const esSel = fechaStr===sel.fecha;
+        const cls = ['cal-dia',esHoy?'hoy':'',esSel?'seleccionado':'',esPasado?'pasado':'',!esLaboral?'no-laboral':''].filter(Boolean).join(' ');
+        const click = (!esPasado&&esLaboral) ? `onclick="selFecha('${fechaStr}')"` : '';
+        html += `<div class="${cls}" ${click}>${d}</div>`;
+    }
+    document.getElementById('cal-grid').innerHTML = html;
+}
+
+window.selFecha = async (fecha) => {
+    sel.fecha = fecha;
+    sel.hora = null;
+    document.getElementById('btn-paso4').disabled = true;
+    renderCal();
+    await renderHorarios(fecha);
+};
+
+async function renderHorarios(fecha) {
+    const wrap = document.getElementById('horarios-wrap');
+    const grid = document.getElementById('horarios-grid');
+    const titulo = document.getElementById('horarios-titulo');
+    wrap.style.display = 'block';
+    const [y,m,d] = fecha.split('-');
+    titulo.textContent = `Horarios disponibles — ${parseInt(d)} de ${MESES[parseInt(m)-1]}`;
+
+    const prof = sel.prof;
+    const slots = generarSlots(prof.horaInicio||'09:00', prof.horaFin||'19:00', prof.intervalo||60);
+    const ocupados = turnosExistentes.filter(t=>t.fecha===fecha&&t.profesionalId===prof.id&&t.estado!=='cancelado').map(t=>t.hora);
+    const disponibles = slots.filter(h=>!ocupados.includes(h));
+
+    if(!disponibles.length) { grid.innerHTML = '<p style="color:#aaa;font-size:1.4rem">Sin horarios disponibles para este día.</p>'; return; }
+    grid.innerHTML = disponibles.map(h=>`
+        <button class="horario-btn" onclick="selHora('${h}')" id="hb-${h.replace(':','-')}">${h}hs</button>
+    `).join('');
+}
+
+window.selHora = (hora) => {
+    sel.hora = hora;
+    document.querySelectorAll('.horario-btn').forEach(b=>b.classList.remove('seleccionado'));
+    document.getElementById(`hb-${hora.replace(':','-')}`).classList.add('seleccionado');
+    document.getElementById('btn-paso4').disabled = false;
+};
+
+function generarSlots(inicio,fin,intervalo){
+    const slots=[];
+    let [h,m]=inicio.split(':').map(Number);
+    const [hf,mf]=fin.split(':').map(Number);
+    const finMin=hf*60+mf;
+    while(h*60+m<finMin){
+        slots.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
+        m+=intervalo; h+=Math.floor(m/60); m%=60;
+    }
+    return slots;
+}
+
+window.cambiarMes = (delta) => {
+    calFecha = new Date(calFecha.getFullYear(), calFecha.getMonth()+delta, 1);
+    renderCal();
+};
+
+// ── PASO 4: Confirmar ──────────────────────
+function renderResumen() {
+    const [y,m,d] = sel.fecha.split('-');
+    const fechaStr = `${parseInt(d)} de ${MESES[parseInt(m)-1]} de ${y}`;
+    document.getElementById('resumen-card').innerHTML = `
+        <h3>Resumen de tu turno</h3>
+        <div class="resumen-row"><span class="resumen-label">Profesional</span><span class="resumen-valor">${sel.prof?.nombre}</span></div>
+        <div class="resumen-row"><span class="resumen-label">Servicio</span><span class="resumen-valor">${sel.srv?.nombre}${sel.srv?.precio?` · $${Number(sel.srv.precio).toLocaleString('es-AR')}`:''}</span></div>
+        <div class="resumen-row"><span class="resumen-label">Fecha</span><span class="resumen-valor">${fechaStr}</span></div>
+        <div class="resumen-row"><span class="resumen-label">Hora</span><span class="resumen-valor">${sel.hora}hs</span></div>
+    `;
+}
+
+window.confirmarTurno = async () => {
+    const nombre = document.getElementById('cli-nombre').value.trim();
+    const tel = document.getElementById('cli-tel').value.trim();
+    const email = document.getElementById('cli-email').value.trim();
+    if(!nombre||!tel) { alert('Completá tu nombre y WhatsApp para continuar.'); return; }
+
+    const btn = document.getElementById('btn-confirmar');
+    btn.disabled = true; btn.textContent = 'Guardando...';
+
+    try {
+        await addDoc(collection(db,'turnos'), {
+            cliente: nombre, tel, email,
+            profesionalId: sel.prof.id,
+            servicioId: sel.srv.id,
+            fecha: sel.fecha, hora: sel.hora,
+            estado: 'pendiente',
+            creadoEn: new Date().toISOString()
+        });
+
         const [y,m,d] = sel.fecha.split('-');
-        const fechaStr = `${parseInt(d)} de ${MESES[parseInt(m)-1]} de ${y}`;
-        document.getElementById('resumen-card').innerHTML = `
-            <h3>Resumen de tu turno</h3>
-            <div class="resumen-row"><span class="resumen-label">Profesional</span><span class="resumen-valor">${sel.prof?.nombre}</span></div>
-            <div class="resumen-row"><span class="resumen-label">Servicio</span><span class="resumen-valor">${sel.srv?.nombre}${sel.srv?.precio?` · $${Number(sel.srv.precio).toLocaleString('es-AR')}`:''}</span></div>
-            <div class="resumen-row"><span class="resumen-label">Fecha</span><span class="resumen-valor">${fechaStr}</span></div>
-            <div class="resumen-row"><span class="resumen-label">Hora</span><span class="resumen-valor">${sel.hora}hs</span></div>
-        `;
-    }
-
-    window.confirmarTurno = async () => {
-        const nombre = document.getElementById('cli-nombre').value.trim();
-        const tel = document.getElementById('cli-tel').value.trim();
-        const email = document.getElementById('cli-email').value.trim();
-        if(!nombre||!tel) { alert('Completá tu nombre y WhatsApp para continuar.'); return; }
-
-        const btn = document.getElementById('btn-confirmar');
-        btn.disabled = true; btn.textContent = 'Guardando...';
+        const fechaStr = `${parseInt(d)} de ${MESES[parseInt(m)-1]}`;
 
         try {
-            await addDoc(collection(db,'turnos'), {
-                cliente: nombre, tel, email,
-                profesionalId: sel.prof.id,
-                servicioId: sel.srv.id,
-                fecha: sel.fecha, hora: sel.hora,
-                estado: 'pendiente',
-                creadoEn: new Date().toISOString()
+            await fetch('https://formspree.io/f/xyzyjlky', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify({
+                    tipo: '🗓 Nuevo turno reservado en Fusión',
+                    cliente: nombre,
+                    whatsapp: tel,
+                    email_cliente: email || 'No proporcionó',
+                    profesional: sel.prof?.nombre,
+                    servicio: sel.srv?.nombre,
+                    fecha: `${fechaStr} de ${y}`,
+                    hora: `${sel.hora}hs`,
+                    _subject: `Nuevo turno: ${nombre} — ${fechaStr} ${sel.hora}hs`
+                })
             });
+        } catch(emailErr) { console.warn('Email no enviado:', emailErr); }
 
-            // Mensaje WhatsApp al salón
-            const [y,m,d] = sel.fecha.split('-');
-            const fechaStr = `${parseInt(d)} de ${MESES[parseInt(m)-1]}`;
-            const msgSalon = encodeURIComponent(
-                `🗓 *Nueva reserva en Fusión*\n\n` +
-                `👤 Cliente: ${nombre}\n📱 Tel: ${tel}\n` +
-                `✂️ Servicio: ${sel.srv?.nombre}\n💇 Profesional: ${sel.prof?.nombre}\n` +
-                `📅 Fecha: ${fechaStr}\n🕐 Hora: ${sel.hora}hs`
-            );
-            document.getElementById('btn-wsp-conf').href = `https://wa.me/${WSP_FUSION}?text=${msgSalon}`;
-            document.getElementById('btn-wsp-conf').onclick = () =>
-                window.open(`https://wa.me/${WSP_FUSION}?text=${msgSalon}`, '_blank');
+        const msgSalon = encodeURIComponent(
+            `🗓 *Nueva reserva en Fusión*\n\n` +
+            `👤 Cliente: ${nombre}\n📱 Tel: ${tel}\n` +
+            `✂️ Servicio: ${sel.srv?.nombre}\n💇 Profesional: ${sel.prof?.nombre}\n` +
+            `📅 Fecha: ${fechaStr}\n🕐 Hora: ${sel.hora}hs`
+        );
+        document.getElementById('btn-wsp-conf').href = `https://wa.me/${WSP_FUSION}?text=${msgSalon}`;
+        document.getElementById('btn-wsp-conf').onclick = () =>
+            window.open(`https://wa.me/${WSP_FUSION}?text=${msgSalon}`, '_blank');
 
-            document.getElementById('conf-mensaje').textContent =
-                `Tu turno para el ${fechaStr} a las ${sel.hora}hs fue registrado. Te confirmaremos por WhatsApp a la brevedad.`;
+        document.getElementById('conf-mensaje').textContent =
+            `Tu turno para el ${fechaStr} a las ${sel.hora}hs fue registrado. Te confirmaremos por WhatsApp a la brevedad.`;
 
-            // Recargar turnos existentes
-            const snap = await getDocs(collection(db,'turnos'));
-            turnosExistentes = snap.docs.map(d=>({id:d.id,...d.data()}));
+        const snap = await getDocs(collection(db,'turnos'));
+        turnosExistentes = snap.docs.map(d=>({id:d.id,...d.data()}));
 
-            irPaso(5);
-        } catch(e) {
-            console.error(e);
-            alert('Hubo un error. Intentá de nuevo.');
-        } finally {
-            btn.disabled = false; btn.textContent = '✓ Confirmar turno';
-        }
-    };
+        irPaso(5);
+    } catch(e) {
+        console.error(e);
+        alert('Hubo un error. Intentá de nuevo.');
+    } finally {
+        btn.disabled = false; btn.textContent = '✓ Confirmar turno';
+    }
+};
 
-    // ── Navegación pasos ───────────────────────
-    window.irPaso = (n) => {
-        document.querySelectorAll('.wizard-step').forEach(s=>s.classList.remove('activo'));
-        document.getElementById(`step-${n}`).classList.add('activo');
-        // Steps bar
-        for(let i=1;i<=4;i++){
-            const el = document.getElementById(`step-ind-${i}`);
-            if(!el) continue;
-            el.classList.toggle('activo', i===n);
-            el.classList.toggle('completado', i<n);
-        }
-        if(n===2) renderServicios();
-        if(n===3) renderCal();
-        if(n===4) renderResumen();
-        window.scrollTo({top:0,behavior:'smooth'});
-    };
+// ── Navegación pasos ───────────────────────
+window.irPaso = (n) => {
+    document.querySelectorAll('.wizard-step').forEach(s=>s.classList.remove('activo'));
+    document.getElementById(`step-${n}`).classList.add('activo');
+    for(let i=1;i<=4;i++){
+        const el = document.getElementById(`step-ind-${i}`);
+        if(!el) continue;
+        el.classList.toggle('activo', i===n);
+        el.classList.toggle('completado', i<n);
+    }
+    if(n===2) renderServicios();
+    if(n===3) renderCal();
+    if(n===4) renderResumen();
+    window.scrollTo({top:0,behavior:'smooth'});
+};
 
-    window.resetear = () => {
-        sel = {prof:null,srv:null,fecha:null,hora:null};
-        document.getElementById('btn-paso2').disabled = true;
-        document.getElementById('cli-nombre').value='';
-        document.getElementById('cli-tel').value='';
-        document.getElementById('cli-email').value='';
-        renderProfesionales();
-    };
+window.resetear = () => {
+    sel = {prof:null,srv:null,fecha:null,hora:null};
+    document.getElementById('btn-paso2').disabled = true;
+    document.getElementById('cli-nombre').value='';
+    document.getElementById('cli-tel').value='';
+    document.getElementById('cli-email').value='';
+    renderProfesionales();
+};
 
-    init();
-    </script>
-</body>
-</html>
+init();
+</script>
