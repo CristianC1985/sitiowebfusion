@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Fusión Peluquería</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=PT+Sans:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        :root{--negro:#111;--gris:#f4f4f2;--gris2:#e8e8e6;--rojo:#e53935;--verde:#25D366;--dorado:#f8d470;--sombra:0 4px 20px rgba(0,0,0,.08)}
+        body{font-family:'Open Sans',sans-serif;font-size:14px;background:#f7f7f5;color:#333;min-height:100vh}
+        a{text-decoration:none;color:inherit}
+        button{cursor:pointer;font-family:'Open Sans',sans-serif}
+        input,select,textarea{font-family:'Open Sans',sans-serif}
+
+        /* LOGIN */
+        .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--negro);padding:20px}
+        .login-box{background:white;border-radius:16px;padding:40px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+        .login-box h1{font-family:'Playfair Display',serif;font-size:28px;text-align:center;margin-bottom:6px}
+        .login-box p{text-align:center;color:#888;font-size:13px;margin-bottom:28px}
+        .login-box .form-group{margin-bottom:16px}
+        .login-box label{display:block;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#666;margin-bottom:6px}
+        .login-box input{width:100%;padding:11px 14px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;transition:border-color .2s}
+        .login-box input:focus{outline:none;border-color:var(--negro)}
+        .btn-login{width:100%;padding:13px;background:var(--negro);color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-top:8px;transition:background .2s}
+        .btn-login:hover{background:#333}
+        .login-error{color:var(--rojo);font-size:13px;text-align:center;margin-top:10px;display:none}
+
+        /* LAYOUT ADMIN */
+        .admin-layout{display:none;min-height:100vh}
+        .sidebar{width:220px;background:var(--negro);color:white;position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:100}
+        .sidebar-logo{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
+        .sidebar-logo h2{font-family:'Playfair Display',serif;font-size:20px;color:white}
+        .sidebar-logo span{font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.1em;text-transform:uppercase}
+        .sidebar-nav{flex:1;padding:16px 0}
+        .nav-item{display:flex;align-items:center;gap:10px;padding:12px 20px;font-size:13px;font-weight:600;color:rgba(255,255,255,.6);cursor:pointer;transition:all .2s;border-left:3px solid transparent}
+        .nav-item:hover{color:white;background:rgba(255,255,255,.05)}
+        .nav-item.activo{color:white;background:rgba(255,255,255,.08);border-left-color:var(--dorado)}
+        .nav-item .icon{font-size:16px;width:20px;text-align:center}
+        .sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.08)}
+        .btn-logout{width:100%;padding:10px;background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.6);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+        .btn-logout:hover{background:rgba(255,255,255,.15);color:white}
+
+        .main-content{margin-left:220px;padding:32px;min-height:100vh}
+        .page{display:none}
+        .page.activo{display:block}
+        .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:12px}
+        .page-header h1{font-family:'Playfair Display',serif;font-size:26px;color:var(--negro)}
+        .page-header p{font-size:13px;color:#888;margin-top:2px}
+
+        /* BOTONES */
+        .btn{padding:10px 20px;border-radius:8px;border:none;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+        .btn-primary{background:var(--negro);color:white}.btn-primary:hover{background:#333}
+        .btn-success{background:#2e7d32;color:white}.btn-success:hover{background:#1b5e20}
+        .btn-danger{background:var(--rojo);color:white}.btn-danger:hover{background:#c62828}
+        .btn-ghost{background:transparent;border:1.5px solid #ddd;color:#555}.btn-ghost:hover{border-color:#aaa;color:var(--negro)}
+        .btn-wsp{background:var(--verde);color:white}.btn-wsp:hover{background:#1ebe5d}
+        .btn-sm{padding:7px 14px;font-size:12px}
+
+        /* CARDS STATS */
+        .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+        .stat-card{background:white;border-radius:12px;padding:20px;box-shadow:var(--sombra)}
+        .stat-card .stat-icon{font-size:28px;margin-bottom:8px}
+        .stat-card .stat-num{font-family:'Playfair Display',serif;font-size:32px;color:var(--negro);line-height:1}
+        .stat-card .stat-label{font-size:12px;color:#888;margin-top:4px;text-transform:uppercase;letter-spacing:.08em}
+
+        /* TABLA */
+        .table-wrap{background:white;border-radius:12px;box-shadow:var(--sombra);overflow:hidden}
+        .table-toolbar{padding:16px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f0f0f0;flex-wrap:wrap;gap:10px}
+        .table-toolbar h3{font-size:15px;font-weight:700;color:var(--negro)}
+        table{width:100%;border-collapse:collapse}
+        th{background:#fafaf8;padding:11px 16px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#888;border-bottom:1px solid #f0f0f0}
+        td{padding:13px 16px;border-bottom:1px solid #f8f8f8;font-size:13px;color:#444;vertical-align:middle}
+        tr:last-child td{border-bottom:none}
+        tr:hover td{background:#fafaf8}
+        .avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;background:#eee}
+        .avatar-placeholder{width:38px;height:38px;border-radius:50%;background:var(--gris2);display:flex;align-items:center;justify-content:center;font-size:16px}
+
+        /* BADGE ESTADO */
+        .badge{display:inline-block;padding:3px 10px;border-radius:50px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+        .badge-pendiente{background:#fff3cd;color:#856404}
+        .badge-confirmado{background:#d4edda;color:#155724}
+        .badge-cancelado{background:#f8d7da;color:#721c24}
+        .badge-completado{background:#d1ecf1;color:#0c5460}
+
+        /* MODAL */
+        .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+        .modal-bg.abierto{display:flex}
+        .modal{background:white;border-radius:16px;padding:32px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;position:relative}
+        .modal h2{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:20px;color:var(--negro)}
+        .modal-cerrar{position:absolute;top:16px;right:20px;background:none;border:none;font-size:22px;color:#aaa;cursor:pointer}
+        .modal-cerrar:hover{color:var(--negro)}
+        .form-group{margin-bottom:16px}
+        .form-group label{display:block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#666;margin-bottom:6px}
+        .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 14px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;transition:border-color .2s;background:#fafafa}
+        .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--negro);background:white}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+        .form-group textarea{resize:vertical;min-height:80px}
+
+        /* HORARIOS */
+        .horarios-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:8px}
+        .dia-toggle{padding:8px 4px;border:1.5px solid #ddd;border-radius:8px;background:white;font-size:12px;font-weight:700;color:#888;cursor:pointer;text-align:center;transition:all .2s}
+        .dia-toggle.activo{background:var(--negro);border-color:var(--negro);color:white}
+        .servicios-check{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+        .srv-chip{padding:6px 14px;border:1.5px solid #ddd;border-radius:50px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;color:#666}
+        .srv-chip.activo{background:var(--negro);border-color:var(--negro);color:white}
+
+        /* FOTO UPLOAD */
+        .foto-upload{border:2px dashed #ddd;border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s;position:relative}
+        .foto-upload:hover{border-color:#aaa}
+        .foto-upload input{position:absolute;inset:0;opacity:0;cursor:pointer}
+        .foto-preview{width:80px;height:80px;border-radius:50%;object-fit:cover;margin:0 auto 8px;display:none}
+        .foto-icon{font-size:32px;margin-bottom:6px}
+        .foto-text{font-size:13px;color:#888}
+
+        /* CALENDARIO */
+        .cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+        .cal-header h3{font-size:16px;font-weight:700;color:var(--negro)}
+        .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+        .cal-label{text-align:center;font-size:11px;font-weight:700;color:#aaa;padding:6px 0;text-transform:uppercase}
+        .cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:13px;cursor:pointer;transition:all .2s;border:1.5px solid transparent;position:relative}
+        .cal-day:hover:not(.vacio):not(.pasado){background:var(--gris)}
+        .cal-day.hoy{font-weight:700;border-color:var(--negro)}
+        .cal-day.seleccionado{background:var(--negro);color:white}
+        .cal-day.pasado{color:#ddd;cursor:default}
+        .cal-day.vacio{cursor:default}
+        .cal-day.tiene-turnos::after{content:'';position:absolute;bottom:3px;width:4px;height:4px;border-radius:50%;background:var(--dorado)}
+        .cal-day.seleccionado.tiene-turnos::after{background:white}
+
+        /* TURNOS DEL DÍA */
+        .turno-card{background:white;border-radius:10px;padding:14px 16px;margin-bottom:10px;box-shadow:var(--sombra);display:flex;align-items:center;gap:14px;border-left:3px solid #ddd}
+        .turno-card.pendiente{border-left-color:#ffc107}
+        .turno-card.confirmado{border-left-color:#28a745}
+        .turno-card.cancelado{border-left-color:var(--rojo)}
+        .turno-card.completado{border-left-color:#17a2b8}
+        .turno-hora{font-family:'Playfair Display',serif;font-size:22px;min-width:60px;color:var(--negro)}
+        .turno-info{flex:1}
+        .turno-nombre{font-weight:700;font-size:14px;color:var(--negro)}
+        .turno-detalle{font-size:12px;color:#888;margin-top:2px}
+        .turno-acciones{display:flex;gap:6px;flex-wrap:wrap}
+
+        /* EMPTY STATE */
+        .empty{text-align:center;padding:48px 20px;color:#bbb}
+        .empty span{font-size:48px;display:block;margin-bottom:12px}
+        .empty p{font-size:14px}
+
+        /* TOAST */
+        .toast{position:fixed;bottom:24px;right:24px;background:var(--negro);color:white;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;transform:translateY(80px);opacity:0;transition:all .3s}
+        .toast.visible{transform:translateY(0);opacity:1}
+        .toast.error{background:var(--rojo)}
+        .toast.success{background:#2e7d32}
+
+        @media(max-width:900px){
+            .sidebar{width:60px}
+            .sidebar-logo,.nav-item span,.sidebar-footer{display:none}
+            .main-content{margin-left:60px;padding:20px}
+            .stats-grid{grid-template-columns:repeat(2,1fr)}
+        }
+        @media(max-width:600px){
+            .stats-grid{grid-template-columns:1fr 1fr}
+            .form-row{grid-template-columns:1fr}
+            .main-content{padding:16px}
+        }
+    </style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ══ LOGIN ══ -->
+<div class="login-wrap" id="loginWrap">
+    <div class="login-box">
+        <h1>Fusión Admin</h1>
+        <p>Ingresá con tu cuenta de equipo</p>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="loginEmail" placeholder="tu@email.com">
+        </div>
+        <div class="form-group">
+            <label>Contraseña</label>
+            <input type="password" id="loginPass" placeholder="••••••••">
+        </div>
+        <button class="btn-login" onclick="doLogin()">Ingresar</button>
+        <p class="login-error" id="loginError"></p>
+    </div>
+</div>
+
+<!-- ══ ADMIN LAYOUT ══ -->
+<div class="admin-layout" id="adminLayout">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <h2>Fusión</h2>
+            <span>Panel Admin</span>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-item activo" onclick="irA('dashboard')">
+                <span class="icon">📊</span><span>Dashboard</span>
+            </div>
+            <div class="nav-item" onclick="irA('turnos')">
+                <span class="icon">📅</span><span>Turnos</span>
+            </div>
+            <div class="nav-item" onclick="irA('profesionales')">
+                <span class="icon">💇</span><span>Profesionales</span>
+            </div>
+            <div class="nav-item" onclick="irA('servicios')">
+                <span class="icon">✂️</span><span>Servicios</span>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+
+        <!-- DASHBOARD -->
+        <div class="page activo" id="page-dashboard">
+            <div class="page-header">
+                <div>
+                    <h1>Dashboard</h1>
+                    <p id="dash-fecha"></p>
+                </div>
+                <button class="btn btn-primary" onclick="abrirModalTurno()">+ Nuevo turno</button>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-num" id="stat-hoy">0</div><div class="stat-label">Turnos hoy</div></div>
+                <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-num" id="stat-pendientes">0</div><div class="stat-label">Pendientes</div></div>
+                <div class="stat-card"><div class="stat-icon">💇</div><div class="stat-num" id="stat-profesionales">0</div><div class="stat-label">Profesionales</div></div>
+                <div class="stat-card"><div class="stat-icon">✂️</div><div class="stat-num" id="stat-servicios">0</div><div class="stat-label">Servicios</div></div>
+            </div>
+            <div class="table-wrap">
+                <div class="table-toolbar"><h3>Próximos turnos</h3></div>
+                <div id="dash-turnos" style="padding:16px"></div>
+            </div>
+        </div>
+
+        <!-- TURNOS -->
+        <div class="page" id="page-turnos">
+            <div class="page-header">
+                <div><h1>Gestión de Turnos</h1><p>Administrá todos los turnos</p></div>
+                <button class="btn btn-primary" onclick="abrirModalTurno()">+ Nuevo turno</button>
+            </div>
+            <!-- Calendario -->
+            <div class="table-wrap" style="padding:20px;margin-bottom:20px">
+                <div class="cal-header">
+                    <button class="btn btn-ghost btn-sm" onclick="cambiarMes(-1)">← Anterior</button>
+                    <h3 id="cal-titulo"></h3>
+                    <button class="btn btn-ghost btn-sm" onclick="cambiarMes(1)">Siguiente →</button>
+                </div>
+                <div class="cal-grid" id="cal-grid"></div>
+            </div>
+            <!-- Turnos del día -->
+            <div class="table-wrap" style="padding:20px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                    <h3 id="turnos-dia-titulo" style="font-size:15px;font-weight:700;color:var(--negro)">Seleccioná un día</h3>
+                </div>
+                <div id="turnos-dia-lista"></div>
+            </div>
+        </div>
+
+        <!-- PROFESIONALES -->
+        <div class="page" id="page-profesionales">
+            <div class="page-header">
+                <div><h1>Profesionales</h1><p>Gestioná tu equipo</p></div>
+                <button class="btn btn-primary" onclick="abrirModalProfesional()">+ Agregar</button>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Profesional</th>
+                            <th>Servicios</th>
+                            <th>Horarios</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-profesionales"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SERVICIOS -->
+        <div class="page" id="page-servicios">
+            <div class="page-header">
+                <div><h1>Servicios</h1><p>Configurá los servicios del salón</p></div>
+                <button class="btn btn-primary" onclick="abrirModalServicio()">+ Agregar</button>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Servicio</th>
+                            <th>Duración</th>
+                            <th>Precio</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-servicios"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ══ MODAL PROFESIONAL ══ -->
+<div class="modal-bg" id="modal-profesional">
+    <div class="modal">
+        <button class="modal-cerrar" onclick="cerrarModal('modal-profesional')">×</button>
+        <h2 id="modal-prof-titulo">Nuevo Profesional</h2>
+        <input type="hidden" id="prof-id">
+
+        <div class="form-group">
+            <label>Foto</label>
+            <div class="foto-upload" id="fotoUploadArea">
+                <input type="file" id="prof-foto-input" accept="image/*" onchange="previsualizarFoto(this)">
+                <img class="foto-preview" id="prof-foto-preview">
+                <div class="foto-icon" id="foto-icon">📷</div>
+                <div class="foto-text">Hacé clic para subir una foto</div>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Nombre</label>
+                <input type="text" id="prof-nombre" placeholder="Nombre">
+            </div>
+            <div class="form-group">
+                <label>Especialidad</label>
+                <input type="text" id="prof-especialidad" placeholder="Ej: Colorista">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Días de atención</label>
+            <div class="horarios-grid">
+                <button type="button" class="dia-toggle" data-dia="1">Lun</button>
+                <button type="button" class="dia-toggle" data-dia="2">Mar</button>
+                <button type="button" class="dia-toggle" data-dia="3">Mié</button>
+                <button type="button" class="dia-toggle" data-dia="4">Jue</button>
+                <button type="button" class="dia-toggle" data-dia="5">Vie</button>
+                <button type="button" class="dia-toggle" data-dia="6">Sáb</button>
+                <button type="button" class="dia-toggle" data-dia="0">Dom</button>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Hora inicio</label>
+                <input type="time" id="prof-hora-inicio" value="09:00">
+            </div>
+            <div class="form-group">
+                <label>Hora fin</label>
+                <input type="time" id="prof-hora-fin" value="19:00">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Intervalo entre turnos</label>
+            <select id="prof-intervalo">
+                <option value="30">30 minutos</option>
+                <option value="45">45 minutos</option>
+                <option value="60" selected>1 hora</option>
+                <option value="90">1 hora 30 min</option>
+                <option value="120">2 horas</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Servicios que ofrece</label>
+            <div class="servicios-check" id="servicios-check"></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px">
+            <button class="btn btn-ghost" style="flex:1" onclick="cerrarModal('modal-profesional')">Cancelar</button>
+            <button class="btn btn-primary" style="flex:2" onclick="guardarProfesional()">Guardar profesional</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL SERVICIO ══ -->
+<div class="modal-bg" id="modal-servicio">
+    <div class="modal">
+        <button class="modal-cerrar" onclick="cerrarModal('modal-servicio')">×</button>
+        <h2 id="modal-srv-titulo">Nuevo Servicio</h2>
+        <input type="hidden" id="srv-id">
+        <div class="form-group">
+            <label>Nombre del servicio</label>
+            <input type="text" id="srv-nombre" placeholder="Ej: Corte de cabello">
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Duración (minutos)</label>
+                <select id="srv-duracion">
+                    <option value="30">30 min</option>
+                    <option value="45">45 min</option>
+                    <option value="60" selected>60 min</option>
+                    <option value="90">90 min</option>
+                    <option value="120">120 min</option>
+                    <option value="180">180 min</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Precio</label>
+                <input type="number" id="srv-precio" placeholder="0">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Descripción (opcional)</label>
+            <textarea id="srv-descripcion" placeholder="Descripción breve del servicio"></textarea>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px">
+            <button class="btn btn-ghost" style="flex:1" onclick="cerrarModal('modal-servicio')">Cancelar</button>
+            <button class="btn btn-primary" style="flex:2" onclick="guardarServicio()">Guardar servicio</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL TURNO ══ -->
+<div class="modal-bg" id="modal-turno">
+    <div class="modal">
+        <button class="modal-cerrar" onclick="cerrarModal('modal-turno')">×</button>
+        <h2 id="modal-turno-titulo">Nuevo Turno</h2>
+        <input type="hidden" id="turno-id">
+        <div class="form-row">
+            <div class="form-group">
+                <label>Nombre del cliente</label>
+                <input type="text" id="turno-cliente" placeholder="Nombre completo">
+            </div>
+            <div class="form-group">
+                <label>WhatsApp</label>
+                <input type="tel" id="turno-tel" placeholder="11-1234-5678">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Profesional</label>
+            <select id="turno-profesional" onchange="cargarHorariosDisponibles()"></select>
+        </div>
+        <div class="form-group">
+            <label>Servicio</label>
+            <select id="turno-servicio"></select>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Fecha</label>
+                <input type="date" id="turno-fecha" onchange="cargarHorariosDisponibles()">
+            </div>
+            <div class="form-group">
+                <label>Hora</label>
+                <select id="turno-hora"></select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Estado</label>
+            <select id="turno-estado">
+                <option value="confirmado">Confirmado</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="cancelado">Cancelado</option>
+                <option value="completado">Completado</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Notas (opcional)</label>
+            <textarea id="turno-notas" placeholder="Notas internas..."></textarea>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px">
+            <button class="btn btn-ghost" style="flex:1" onclick="cerrarModal('modal-turno')">Cancelar</button>
+            <button class="btn btn-primary" style="flex:2" onclick="guardarTurno()">Guardar turno</button>
+        </div>
+    </div>
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, doc, addDoc, setDoc, getDoc, getDocs,
+    deleteDoc, query, where, orderBy, onSnapshot, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCwB3Tpqe9EAPctSh4aB-aqf6xSUhm0Twc",
+    authDomain: "fusion-peluqueria-e62f1.firebaseapp.com",
+    projectId: "fusion-peluqueria-e62f1",
+    storageBucket: "fusion-peluqueria-e62f1.firebasestorage.app",
+    messagingSenderId: "1091187068496",
+    appId: "1:1091187068496:web:f0c0f0dca735960a0ccb55"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// ── Estado global ──────────────────────────────
+let profesionales = [];
+let servicios = [];
+let turnos = [];
+let calFecha = new Date();
+let diaSeleccionado = null;
+let fotoFile = null;
+
+// ── Auth ───────────────────────────────────────
+onAuthStateChanged(auth, user => {
+    if (user) {
+        document.getElementById('loginWrap').style.display = 'none';
+        document.getElementById('adminLayout').style.display = 'flex';
+        iniciarAdmin();
+    } else {
+        document.getElementById('loginWrap').style.display = 'flex';
+        document.getElementById('adminLayout').style.display = 'none';
+    }
+});
+
+window.doLogin = async () => {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass = document.getElementById('loginPass').value;
+    const err = document.getElementById('loginError');
+    err.style.display = 'none';
+    try {
+        await signInWithEmailAndPassword(auth, email, pass);
+    } catch(e) {
+        err.textContent = 'Email o contraseña incorrectos.';
+        err.style.display = 'block';
+    }
+};
+
+window.doLogout = () => signOut(auth);
+
+// ── Init ───────────────────────────────────────
+async function iniciarAdmin() {
+    document.getElementById('dash-fecha').textContent = new Date().toLocaleDateString('es-AR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    await cargarServicios();
+    await cargarProfesionales();
+    await cargarTurnos();
+    renderCalendario();
+    actualizarDashboard();
+}
+
+// ── NAVEGACIÓN ─────────────────────────────────
+window.irA = (pagina) => {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('activo'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('activo'));
+    document.getElementById(`page-${pagina}`).classList.add('activo');
+    document.querySelector(`[onclick="irA('${pagina}')"]`).classList.add('activo');
+    if(pagina === 'turnos') renderCalendario();
+};
+
+// ── TOAST ──────────────────────────────────────
+window.toast = (msg, tipo='') => {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast visible ${tipo}`;
+    setTimeout(() => t.className = 'toast', 3000);
+};
+
+// ── MODALES ────────────────────────────────────
+window.cerrarModal = (id) => document.getElementById(id).classList.remove('abierto');
+window.abrirModal = (id) => document.getElementById(id).classList.add('abierto');
+
+// ══════════════════════════════════════════════
+// SERVICIOS
+// ══════════════════════════════════════════════
+async function cargarServicios() {
+    const snap = await getDocs(collection(db, 'servicios'));
+    servicios = snap.docs.map(d => ({id:d.id,...d.data()}));
+    renderTablaServicios();
+    renderChipsServicios();
+    document.getElementById('stat-servicios').textContent = servicios.length;
+}
+
+function renderTablaServicios() {
+    const tbody = document.getElementById('tabla-servicios');
+    if (!servicios.length) { tbody.innerHTML = '<tr><td colspan="4"><div class="empty"><span>✂️</span><p>No hay servicios. Agregá el primero.</p></div></td></tr>'; return; }
+    tbody.innerHTML = servicios.map(s => `
+        <tr>
+            <td><strong>${s.nombre}</strong>${s.descripcion ? `<br><span style="color:#888;font-size:12px">${s.descripcion}</span>` : ''}</td>
+            <td>${s.duracion} min</td>
+            <td>$${Number(s.precio||0).toLocaleString('es-AR')}</td>
+            <td>
+                <button class="btn btn-ghost btn-sm" onclick="editarServicio('${s.id}')">✏️ Editar</button>
+                <button class="btn btn-danger btn-sm" style="margin-left:6px" onclick="eliminarServicio('${s.id}')">🗑</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function renderChipsServicios() {
+    const cont = document.getElementById('servicios-check');
+    if(!cont) return;
+    cont.innerHTML = servicios.map(s => `<span class="srv-chip" data-id="${s.id}" onclick="toggleChip(this)">${s.nombre}</span>`).join('');
+}
+
+window.toggleChip = (el) => el.classList.toggle('activo');
+
+window.abrirModalServicio = () => {
+    document.getElementById('srv-id').value = '';
+    document.getElementById('modal-srv-titulo').textContent = 'Nuevo Servicio';
+    document.getElementById('srv-nombre').value = '';
+    document.getElementById('srv-duracion').value = '60';
+    document.getElementById('srv-precio').value = '';
+    document.getElementById('srv-descripcion').value = '';
+    abrirModal('modal-servicio');
+};
+
+window.editarServicio = (id) => {
+    const s = servicios.find(x => x.id === id);
+    if(!s) return;
+    document.getElementById('srv-id').value = id;
+    document.getElementById('modal-srv-titulo').textContent = 'Editar Servicio';
+    document.getElementById('srv-nombre').value = s.nombre;
+    document.getElementById('srv-duracion').value = s.duracion;
+    document.getElementById('srv-precio').value = s.precio || '';
+    document.getElementById('srv-descripcion').value = s.descripcion || '';
+    abrirModal('modal-servicio');
+};
+
+window.guardarServicio = async () => {
+    const id = document.getElementById('srv-id').value;
+    const data = {
+        nombre: document.getElementById('srv-nombre').value.trim(),
+        duracion: parseInt(document.getElementById('srv-duracion').value),
+        precio: parseInt(document.getElementById('srv-precio').value) || 0,
+        descripcion: document.getElementById('srv-descripcion').value.trim()
+    };
+    if(!data.nombre) { toast('Ingresá un nombre','error'); return; }
+    try {
+        if(id) { await setDoc(doc(db,'servicios',id), data); }
+        else { await addDoc(collection(db,'servicios'), data); }
+        cerrarModal('modal-servicio');
+        await cargarServicios();
+        toast('Servicio guardado ✓','success');
+    } catch(e) { toast('Error al guardar','error'); }
+};
+
+window.eliminarServicio = async (id) => {
+    if(!confirm('¿Eliminar este servicio?')) return;
+    await deleteDoc(doc(db,'servicios',id));
+    await cargarServicios();
+    toast('Servicio eliminado','success');
+};
+
+// ══════════════════════════════════════════════
+// PROFESIONALES
+// ══════════════════════════════════════════════
+async function cargarProfesionales() {
+    const snap = await getDocs(collection(db,'profesionales'));
+    profesionales = snap.docs.map(d => ({id:d.id,...d.data()}));
+    renderTablaProfesionales();
+    document.getElementById('stat-profesionales').textContent = profesionales.length;
+}
+
+function renderTablaProfesionales() {
+    const tbody = document.getElementById('tabla-profesionales');
+    if(!profesionales.length) { tbody.innerHTML = '<tr><td colspan="4"><div class="empty"><span>💇</span><p>No hay profesionales. Agregá el primero.</p></div></td></tr>'; return; }
+    tbody.innerHTML = profesionales.map(p => {
+        const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+        const diasStr = (p.dias||[]).map(d=>dias[d]).join(', ');
+        const srvsStr = (p.servicios||[]).map(id => servicios.find(s=>s.id===id)?.nombre||'').filter(Boolean).join(', ');
+        return `<tr>
+            <td>
+                <div style="display:flex;align-items:center;gap:12px">
+                    ${p.foto ? `<img class="avatar" src="${p.foto}" alt="${p.nombre}">` : `<div class="avatar-placeholder">💇</div>`}
+                    <div><strong>${p.nombre}</strong><br><span style="color:#888;font-size:12px">${p.especialidad||''}</span></div>
+                </div>
+            </td>
+            <td style="font-size:12px;max-width:200px">${srvsStr||'Sin servicios'}</td>
+            <td style="font-size:12px">${diasStr||'Sin días'}<br><span style="color:#888">${p.horaInicio||''}–${p.horaFin||''} · c/${p.intervalo||60}min</span></td>
+            <td>
+                <button class="btn btn-ghost btn-sm" onclick="editarProfesional('${p.id}')">✏️ Editar</button>
+                <button class="btn btn-danger btn-sm" style="margin-left:6px" onclick="eliminarProfesional('${p.id}')">🗑</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+window.previsualizarFoto = (input) => {
+    if(input.files && input.files[0]) {
+        fotoFile = input.files[0];
+        const reader = new FileReader();
+        reader.onload = e => {
+            const prev = document.getElementById('prof-foto-preview');
+            prev.src = e.target.result;
+            prev.style.display = 'block';
+            document.getElementById('foto-icon').style.display = 'none';
+        };
+        reader.readAsDataURL(fotoFile);
+    }
+};
+
+window.abrirModalProfesional = () => {
+    document.getElementById('prof-id').value = '';
+    document.getElementById('modal-prof-titulo').textContent = 'Nuevo Profesional';
+    document.getElementById('prof-nombre').value = '';
+    document.getElementById('prof-especialidad').value = '';
+    document.getElementById('prof-hora-inicio').value = '09:00';
+    document.getElementById('prof-hora-fin').value = '19:00';
+    document.getElementById('prof-intervalo').value = '60';
+    document.getElementById('prof-foto-preview').style.display = 'none';
+    document.getElementById('foto-icon').style.display = 'block';
+    document.querySelectorAll('.dia-toggle').forEach(d => d.classList.remove('activo'));
+    renderChipsServicios();
+    fotoFile = null;
+    abrirModal('modal-profesional');
+};
+
+window.editarProfesional = (id) => {
+    const p = profesionales.find(x => x.id===id);
+    if(!p) return;
+    document.getElementById('prof-id').value = id;
+    document.getElementById('modal-prof-titulo').textContent = 'Editar Profesional';
+    document.getElementById('prof-nombre').value = p.nombre;
+    document.getElementById('prof-especialidad').value = p.especialidad||'';
+    document.getElementById('prof-hora-inicio').value = p.horaInicio||'09:00';
+    document.getElementById('prof-hora-fin').value = p.horaFin||'19:00';
+    document.getElementById('prof-intervalo').value = p.intervalo||60;
+    document.querySelectorAll('.dia-toggle').forEach(d => {
+        d.classList.toggle('activo', (p.dias||[]).includes(parseInt(d.dataset.dia)));
+    });
+    renderChipsServicios();
+    document.querySelectorAll('.srv-chip').forEach(c => {
+        c.classList.toggle('activo', (p.servicios||[]).includes(c.dataset.id));
+    });
+    if(p.foto) {
+        const prev = document.getElementById('prof-foto-preview');
+        prev.src = p.foto;
+        prev.style.display = 'block';
+        document.getElementById('foto-icon').style.display = 'none';
+    } else {
+        document.getElementById('prof-foto-preview').style.display = 'none';
+        document.getElementById('foto-icon').style.display = 'block';
+    }
+    fotoFile = null;
+    abrirModal('modal-profesional');
+};
+
+window.guardarProfesional = async () => {
+    const id = document.getElementById('prof-id').value;
+    const dias = [...document.querySelectorAll('.dia-toggle.activo')].map(d => parseInt(d.dataset.dia));
+    const srvs = [...document.querySelectorAll('.srv-chip.activo')].map(c => c.dataset.id);
+    const data = {
+        nombre: document.getElementById('prof-nombre').value.trim(),
+        especialidad: document.getElementById('prof-especialidad').value.trim(),
+        horaInicio: document.getElementById('prof-hora-inicio').value,
+        horaFin: document.getElementById('prof-hora-fin').value,
+        intervalo: parseInt(document.getElementById('prof-intervalo').value),
+        dias, servicios: srvs,
+        foto: id ? (profesionales.find(p=>p.id===id)?.foto||'') : ''
+    };
+    if(!data.nombre) { toast('Ingresá un nombre','error'); return; }
+    try {
+        // Subir foto si hay
+        if(fotoFile) {
+            const storageRef = ref(storage, `profesionales/${Date.now()}_${fotoFile.name}`);
+            const snap = await uploadBytes(storageRef, fotoFile);
+            data.foto = await getDownloadURL(snap.ref);
+        }
+        if(id) { await setDoc(doc(db,'profesionales',id), data); }
+        else { await addDoc(collection(db,'profesionales'), data); }
+        cerrarModal('modal-profesional');
+        await cargarProfesionales();
+        toast('Profesional guardado ✓','success');
+    } catch(e) { console.error(e); toast('Error al guardar','error'); }
+};
+
+window.eliminarProfesional = async (id) => {
+    if(!confirm('¿Eliminar este profesional?')) return;
+    await deleteDoc(doc(db,'profesionales',id));
+    await cargarProfesionales();
+    toast('Profesional eliminado','success');
+};
+
+// ══════════════════════════════════════════════
+// TURNOS
+// ══════════════════════════════════════════════
+async function cargarTurnos() {
+    const snap = await getDocs(collection(db,'turnos'));
+    turnos = snap.docs.map(d => ({id:d.id,...d.data()}));
+    actualizarDashboard();
+    if(diaSeleccionado) renderTurnosDia(diaSeleccionado);
+}
+
+function actualizarDashboard() {
+    const hoy = new Date().toISOString().split('T')[0];
+    const turnosHoy = turnos.filter(t => t.fecha === hoy);
+    const pendientes = turnos.filter(t => t.estado === 'pendiente');
+    document.getElementById('stat-hoy').textContent = turnosHoy.length;
+    document.getElementById('stat-pendientes').textContent = pendientes.length;
+
+    const prox = turnos
+        .filter(t => t.fecha >= hoy && t.estado !== 'cancelado')
+        .sort((a,b) => `${a.fecha}${a.hora}` > `${b.fecha}${b.hora}` ? 1 : -1)
+        .slice(0, 6);
+
+    const cont = document.getElementById('dash-turnos');
+    if(!prox.length) { cont.innerHTML = '<div class="empty"><span>📅</span><p>No hay próximos turnos.</p></div>'; return; }
+    cont.innerHTML = prox.map(t => tarjetaTurno(t)).join('');
+}
+
+function tarjetaTurno(t) {
+    const prof = profesionales.find(p => p.id === t.profesionalId);
+    const srv = servicios.find(s => s.id === t.servicioId);
+    return `<div class="turno-card ${t.estado||'pendiente'}">
+        <div class="turno-hora">${t.hora}</div>
+        <div class="turno-info">
+            <div class="turno-nombre">${t.cliente}</div>
+            <div class="turno-detalle">${srv?.nombre||'Servicio'} · ${prof?.nombre||'Profesional'} · ${formatFecha(t.fecha)}</div>
+            <span class="badge badge-${t.estado||'pendiente'}">${t.estado||'pendiente'}</span>
+        </div>
+        <div class="turno-acciones">
+            <button class="btn btn-wsp btn-sm" onclick="enviarWsp('${t.id}')">💬 WSP</button>
+            <button class="btn btn-ghost btn-sm" onclick="editarTurno('${t.id}')">✏️</button>
+            <button class="btn btn-danger btn-sm" onclick="eliminarTurno('${t.id}')">🗑</button>
+        </div>
+    </div>`;
+}
+
+function renderTurnosDia(fecha) {
+    diaSeleccionado = fecha;
+    const lista = turnos.filter(t => t.fecha === fecha).sort((a,b) => a.hora > b.hora ? 1:-1);
+    const titulo = document.getElementById('turnos-dia-titulo');
+    titulo.textContent = `Turnos del ${formatFecha(fecha)} (${lista.length})`;
+    const cont = document.getElementById('turnos-dia-lista');
+    if(!lista.length) { cont.innerHTML = '<div class="empty"><span>📅</span><p>No hay turnos para este día.</p></div>'; return; }
+    cont.innerHTML = lista.map(t => tarjetaTurno(t)).join('');
+}
+
+window.abrirModalTurno = () => {
+    document.getElementById('turno-id').value = '';
+    document.getElementById('modal-turno-titulo').textContent = 'Nuevo Turno';
+    document.getElementById('turno-cliente').value = '';
+    document.getElementById('turno-tel').value = '';
+    document.getElementById('turno-notas').value = '';
+    document.getElementById('turno-estado').value = 'confirmado';
+
+    // Fecha por defecto: hoy o día seleccionado
+    const fecha = diaSeleccionado || new Date().toISOString().split('T')[0];
+    document.getElementById('turno-fecha').value = fecha;
+    document.getElementById('turno-fecha').min = new Date().toISOString().split('T')[0];
+
+    // Poblar profesionales
+    const selProf = document.getElementById('turno-profesional');
+    selProf.innerHTML = profesionales.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+
+    // Poblar servicios
+    const selSrv = document.getElementById('turno-servicio');
+    selSrv.innerHTML = servicios.map(s => `<option value="${s.id}">${s.nombre} (${s.duracion}min)</option>`).join('');
+
+    cargarHorariosDisponibles();
+    abrirModal('modal-turno');
+};
+
+window.editarTurno = (id) => {
+    const t = turnos.find(x => x.id===id);
+    if(!t) return;
+    document.getElementById('turno-id').value = id;
+    document.getElementById('modal-turno-titulo').textContent = 'Editar Turno';
+    document.getElementById('turno-cliente').value = t.cliente;
+    document.getElementById('turno-tel').value = t.tel||'';
+    document.getElementById('turno-notas').value = t.notas||'';
+    document.getElementById('turno-estado').value = t.estado||'confirmado';
+    document.getElementById('turno-fecha').value = t.fecha;
+
+    const selProf = document.getElementById('turno-profesional');
+    selProf.innerHTML = profesionales.map(p => `<option value="${p.id}" ${p.id===t.profesionalId?'selected':''}>${p.nombre}</option>`).join('');
+
+    const selSrv = document.getElementById('turno-servicio');
+    selSrv.innerHTML = servicios.map(s => `<option value="${s.id}" ${s.id===t.servicioId?'selected':''}>${s.nombre} (${s.duracion}min)</option>`).join('');
+
+    cargarHorariosDisponibles(t.hora);
+    abrirModal('modal-turno');
+};
+
+window.cargarHorariosDisponibles = (horaActual=null) => {
+    const profId = document.getElementById('turno-profesional').value;
+    const fecha = document.getElementById('turno-fecha').value;
+    const selHora = document.getElementById('turno-hora');
+    if(!profId||!fecha) { selHora.innerHTML = '<option>Primero elegí fecha y profesional</option>'; return; }
+
+    const prof = profesionales.find(p => p.id===profId);
+    if(!prof) return;
+
+    const diaSemana = new Date(fecha+'T12:00:00').getDay();
+    if(!(prof.dias||[]).includes(diaSemana)) {
+        selHora.innerHTML = '<option>Profesional no trabaja este día</option>';
+        return;
+    }
+
+    const slots = generarSlots(prof.horaInicio||'09:00', prof.horaFin||'19:00', prof.intervalo||60);
+    const ocupados = turnos.filter(t => t.fecha===fecha && t.profesionalId===profId && t.estado!=='cancelado').map(t=>t.hora);
+    const disponibles = slots.filter(h => !ocupados.includes(h) || h===horaActual);
+
+    if(!disponibles.length) { selHora.innerHTML = '<option>Sin horarios disponibles</option>'; return; }
+    selHora.innerHTML = disponibles.map(h => `<option value="${h}" ${h===horaActual?'selected':''}>${h}</option>`).join('');
+};
+
+function generarSlots(inicio, fin, intervalo) {
+    const slots = [];
+    let [h,m] = inicio.split(':').map(Number);
+    const [hf,mf] = fin.split(':').map(Number);
+    const finMin = hf*60+mf;
+    while(h*60+m < finMin) {
+        slots.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
+        m += intervalo;
+        h += Math.floor(m/60);
+        m %= 60;
+    }
+    return slots;
+}
+
+window.guardarTurno = async () => {
+    const id = document.getElementById('turno-id').value;
+    const data = {
+        cliente: document.getElementById('turno-cliente').value.trim(),
+        tel: document.getElementById('turno-tel').value.trim(),
+        profesionalId: document.getElementById('turno-profesional').value,
+        servicioId: document.getElementById('turno-servicio').value,
+        fecha: document.getElementById('turno-fecha').value,
+        hora: document.getElementById('turno-hora').value,
+        estado: document.getElementById('turno-estado').value,
+        notas: document.getElementById('turno-notas').value.trim(),
+        updatedAt: new Date().toISOString()
+    };
+    if(!data.cliente||!data.fecha||!data.hora) { toast('Completá los campos obligatorios','error'); return; }
+    try {
+        if(id) { await setDoc(doc(db,'turnos',id), data); }
+        else { data.creadoEn = new Date().toISOString(); await addDoc(collection(db,'turnos'), data); }
+        cerrarModal('modal-turno');
+        await cargarTurnos();
+        renderCalendario();
+        toast('Turno guardado ✓','success');
+    } catch(e) { toast('Error al guardar','error'); }
+};
+
+window.eliminarTurno = async (id) => {
+    if(!confirm('¿Eliminar este turno?')) return;
+    await deleteDoc(doc(db,'turnos',id));
+    await cargarTurnos();
+    renderCalendario();
+    toast('Turno eliminado','success');
+};
+
+// WhatsApp recordatorio
+window.enviarWsp = (id) => {
+    const t = turnos.find(x => x.id===id);
+    if(!t||!t.tel) { toast('El cliente no tiene WhatsApp registrado','error'); return; }
+    const prof = profesionales.find(p=>p.id===t.profesionalId);
+    const srv = servicios.find(s=>s.id===t.servicioId);
+    const num = t.tel.replace(/\D/g,'');
+    const numWsp = num.startsWith('54') ? num : `549${num.replace(/^0/,'')}`;
+    const msg = encodeURIComponent(
+        `Hola ${t.cliente}! 👋\n\nTe recordamos tu turno en *Fusión Peluquería*:\n\n` +
+        `📅 *Fecha:* ${formatFecha(t.fecha)}\n` +
+        `🕐 *Hora:* ${t.hora}hs\n` +
+        `✂️ *Servicio:* ${srv?.nombre||'Consultar'}\n` +
+        `💇 *Profesional:* ${prof?.nombre||'Consultar'}\n\n` +
+        `📍 José María Paz 1612, San Miguel\n\n` +
+        `Si necesitás cambiar o cancelar tu turno, avisanos con anticipación. ¡Te esperamos! 💛`
+    );
+    window.open(`https://wa.me/${numWsp}?text=${msg}`,'_blank');
+};
+
+// ══════════════════════════════════════════════
+// CALENDARIO
+// ══════════════════════════════════════════════
+window.cambiarMes = (delta) => {
+    calFecha = new Date(calFecha.getFullYear(), calFecha.getMonth()+delta, 1);
+    renderCalendario();
+};
+
+function renderCalendario() {
+    const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const hoy = new Date();
+    const year = calFecha.getFullYear();
+    const month = calFecha.getMonth();
+    document.getElementById('cal-titulo').textContent = `${meses[month]} ${year}`;
+
+    const primerDia = new Date(year, month, 1).getDay();
+    const diasEnMes = new Date(year, month+1, 0).getDate();
+
+    // Días con turnos
+    const diasConTurnos = new Set(
+        turnos.filter(t => {
+            const d = new Date(t.fecha+'T12:00');
+            return d.getFullYear()===year && d.getMonth()===month;
+        }).map(t => parseInt(t.fecha.split('-')[2]))
+    );
+
+    let html = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'].map(d => `<div class="cal-label">${d}</div>`).join('');
+
+    for(let i=0; i<primerDia; i++) html += '<div class="cal-day vacio"></div>';
+
+    for(let d=1; d<=diasEnMes; d++) {
+        const fechaStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const esHoy = d===hoy.getDate() && month===hoy.getMonth() && year===hoy.getFullYear();
+        const esSel = fechaStr === diaSeleccionado;
+        const esPasado = new Date(fechaStr+'T23:59') < hoy && !esHoy;
+        const tieneTurnos = diasConTurnos.has(d);
+        html += `<div class="cal-day${esHoy?' hoy':''}${esSel?' seleccionado':''}${esPasado?' pasado':''}${tieneTurnos?' tiene-turnos':''}"
+            onclick="${!esPasado?`selDia('${fechaStr}')`:''}">${d}</div>`;
+    }
+    document.getElementById('cal-grid').innerHTML = html;
+}
+
+window.selDia = (fecha) => {
+    diaSeleccionado = fecha;
+    renderCalendario();
+    renderTurnosDia(fecha);
+};
+
+// ── Utilidades ─────────────────────────────────
+function formatFecha(fechaStr) {
+    if(!fechaStr) return '';
+    const [y,m,d] = fechaStr.split('-');
+    const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    return `${parseInt(d)} ${meses[parseInt(m)-1]} ${y}`;
+}
+
+// Toggles días
+document.querySelectorAll('.dia-toggle').forEach(btn => {
+    btn.addEventListener('click', () => btn.classList.toggle('activo'));
+});
+
+</script>
+</body>
+</html>
