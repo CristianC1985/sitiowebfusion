@@ -97,6 +97,14 @@
         .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
         .form-group textarea{resize:vertical;min-height:80px}
 
+        /* SERVICIOS: categorías y "desde" */
+        .cat-row td{background:#f4f4f2!important;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--negro);padding:10px 16px;border-top:1px solid #eee}
+        .cat-row .cat-count{font-weight:600;color:#999;letter-spacing:.04em;margin-left:6px}
+        .precio-desde{font-size:11px;font-weight:600;color:#888;text-transform:lowercase;margin-right:3px}
+        .check-inline{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:13px;color:#555;cursor:pointer;user-select:none}
+        .check-inline input{width:auto!important;margin:0;accent-color:var(--negro)}
+        .hint{font-size:12px;color:#aaa;margin-top:6px}
+
         /* HORARIOS */
         .horarios-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:8px}
         .dia-toggle{padding:8px 4px;border:1.5px solid #ddd;border-radius:8px;background:white;font-size:12px;font-weight:700;color:#888;cursor:pointer;text-align:center;transition:all .2s}
@@ -389,6 +397,12 @@
             <label>Nombre del servicio</label>
             <input type="text" id="srv-nombre" placeholder="Ej: Corte de cabello">
         </div>
+        <div class="form-group">
+            <label>Categoría / sección</label>
+            <input type="text" id="srv-categoria" list="srv-categorias-list" placeholder="Ej: Color, Corte y Peinados" autocomplete="off">
+            <datalist id="srv-categorias-list"></datalist>
+            <p class="hint">Elegí una existente o escribí una nueva. Los servicios se agrupan por sección.</p>
+        </div>
         <div class="form-row">
             <div class="form-group">
                 <label>Duración (minutos)</label>
@@ -404,6 +418,7 @@
             <div class="form-group">
                 <label>Precio</label>
                 <input type="number" id="srv-precio" placeholder="0">
+                <label class="check-inline"><input type="checkbox" id="srv-desde"> Mostrar como "Desde"</label>
             </div>
         </div>
         <div class="form-group">
@@ -578,29 +593,93 @@ async function cargarServicios() {
     document.getElementById('stat-servicios').textContent = servicios.length;
 }
 
+const CATEGORIAS_BASE = ['Color', 'Corte y Peinados', 'Tratamientos'];
+const SIN_CATEGORIA = 'Sin categoría';
+
+function categoriasExistentes() {
+    const vistas = new Map();
+    [...CATEGORIAS_BASE, ...servicios.map(s => (s.categoria||'').trim()).filter(Boolean)].forEach(c => {
+        const k = c.toLowerCase();
+        if(!vistas.has(k)) vistas.set(k, c);
+    });
+    return [...vistas.values()];
+}
+
+function renderDatalistCategorias() {
+    const dl = document.getElementById('srv-categorias-list');
+    if(dl) dl.innerHTML = categoriasExistentes().map(c => `<option value="${c}"></option>`).join('');
+}
+
+function formatPrecioServicio(s) {
+    const monto = '$' + Number(s.precio||0).toLocaleString('es-AR');
+    return s.precioDesde ? `<span class="precio-desde">desde</span>${monto}` : monto;
+}
+
+function filaServicio(s) {
+    // Profesionales que tienen este servicio
+    const profsDelSrv = profesionales.filter(p => (p.servicios||[]).includes(s.id));
+    const profsStr = profsDelSrv.length
+        ? profsDelSrv.map(p => `<span style="display:inline-block;background:#f0f0ee;border-radius:50px;padding:2px 10px;font-size:11px;margin:2px">${p.nombre}</span>`).join('')
+        : '<span style="color:#bbb;font-size:12px">Sin asignar</span>';
+    return `<tr>
+        <td>
+            <strong>${s.nombre}</strong>
+            ${s.descripcion ? `<br><span style="color:#888;font-size:12px">${s.descripcion}</span>` : ''}
+        </td>
+        <td>${s.duracion} min</td>
+        <td>${formatPrecioServicio(s)}</td>
+        <td style="max-width:200px">${profsStr}</td>
+        <td>
+            <button class="btn btn-ghost btn-sm" onclick="editarServicio('${s.id}')">✏️ Editar</button>
+            <button class="btn btn-danger btn-sm" style="margin-left:6px" onclick="eliminarServicio('${s.id}')">🗑</button>
+        </td>
+    </tr>`;
+}
+
 function renderTablaServicios() {
     const tbody = document.getElementById('tabla-servicios');
-    if (!servicios.length) { tbody.innerHTML = '<tr><td colspan="4"><div class="empty"><span>✂️</span><p>No hay servicios. Agregá el primero.</p></div></td></tr>'; return; }
-    tbody.innerHTML = servicios.map(s => {
-        // Profesionales que tienen este servicio
-        const profsDelSrv = profesionales.filter(p => (p.servicios||[]).includes(s.id));
-        const profsStr = profsDelSrv.length
-            ? profsDelSrv.map(p => `<span style="display:inline-block;background:#f0f0ee;border-radius:50px;padding:2px 10px;font-size:11px;margin:2px">${p.nombre}</span>`).join('')
-            : '<span style="color:#bbb;font-size:12px">Sin asignar</span>';
-        return `<tr>
-            <td>
-                <strong>${s.nombre}</strong>
-                ${s.descripcion ? `<br><span style="color:#888;font-size:12px">${s.descripcion}</span>` : ''}
-            </td>
-            <td>${s.duracion} min</td>
-            <td>$${Number(s.precio||0).toLocaleString('es-AR')}</td>
-            <td style="max-width:200px">${profsStr}</td>
-            <td>
-                <button class="btn btn-ghost btn-sm" onclick="editarServicio('${s.id}')">✏️ Editar</button>
-                <button class="btn btn-danger btn-sm" style="margin-left:6px" onclick="eliminarServicio('${s.id}')">🗑</button>
-            </td>
-        </tr>`;
+    renderDatalistCategorias();
+    if (!servicios.length) { tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><span>✂️</span><p>No hay servicios. Agregá el primero.</p></div></td></tr>'; return; }
+
+    // Agrupar por categoría (sin distinguir mayúsculas), "Sin categoría" al final
+    const grupos = new Map();
+    servicios.forEach(s => {
+        const nombreCat = (s.categoria||'').trim() || SIN_CATEGORIA;
+        const k = nombreCat.toLowerCase();
+        if(!grupos.has(k)) grupos.set(k, {nombre: nombreCat, items: []});
+        grupos.get(k).items.push(s);
+    });
+    const ordenados = [...grupos.values()].sort((a,b) => {
+        if(a.nombre === SIN_CATEGORIA) return 1;
+        if(b.nombre === SIN_CATEGORIA) return -1;
+        return a.nombre.localeCompare(b.nombre, 'es');
+    });
+
+    tbody.innerHTML = ordenados.map(g => {
+        const items = g.items.slice().sort((a,b) => (a.nombre||'').localeCompare(b.nombre||'', 'es'));
+        return `<tr class="cat-row"><td colspan="5">${g.nombre}<span class="cat-count">· ${items.length}</span></td></tr>` +
+            items.map(filaServicio).join('');
     }).join('');
+}
+
+function opcionesServiciosAgrupadas(selId) {
+    const grupos = new Map();
+    servicios.forEach(s => {
+        const nombreCat = (s.categoria||'').trim() || SIN_CATEGORIA;
+        const k = nombreCat.toLowerCase();
+        if(!grupos.has(k)) grupos.set(k, {nombre: nombreCat, items: []});
+        grupos.get(k).items.push(s);
+    });
+    const ordenados = [...grupos.values()].sort((a,b) => {
+        if(a.nombre === SIN_CATEGORIA) return 1;
+        if(b.nombre === SIN_CATEGORIA) return -1;
+        return a.nombre.localeCompare(b.nombre, 'es');
+    });
+    return ordenados.map(g =>
+        `<optgroup label="${g.nombre}">` +
+        g.items.map(s => `<option value="${s.id}" ${s.id===selId?'selected':''}>${s.nombre} (${s.duracion}min)</option>`).join('') +
+        `</optgroup>`
+    ).join('');
 }
 
 function renderChipsServicios() {
@@ -629,8 +708,11 @@ window.abrirModalServicio = () => {
     document.getElementById('modal-srv-titulo').textContent = 'Nuevo Servicio';
     document.getElementById('srv-nombre').value = '';
     document.getElementById('srv-duracion').value = '60';
+    document.getElementById('srv-categoria').value = '';
     document.getElementById('srv-precio').value = '';
+    document.getElementById('srv-desde').checked = false;
     document.getElementById('srv-descripcion').value = '';
+    renderDatalistCategorias();
     renderChipsProfesionalesEnServicio([]);
     abrirModal('modal-servicio');
 };
@@ -642,8 +724,11 @@ window.editarServicio = (id) => {
     document.getElementById('modal-srv-titulo').textContent = 'Editar Servicio';
     document.getElementById('srv-nombre').value = s.nombre;
     document.getElementById('srv-duracion').value = s.duracion;
+    document.getElementById('srv-categoria').value = s.categoria || '';
     document.getElementById('srv-precio').value = s.precio || '';
+    document.getElementById('srv-desde').checked = !!s.precioDesde;
     document.getElementById('srv-descripcion').value = s.descripcion || '';
+    renderDatalistCategorias();
     // Marcar los profesionales que ya tienen este servicio
     const profIdsActivos = profesionales.filter(p => (p.servicios||[]).includes(id)).map(p=>p.id);
     renderChipsProfesionalesEnServicio(profIdsActivos);
@@ -652,10 +737,15 @@ window.editarServicio = (id) => {
 
 window.guardarServicio = async () => {
     const id = document.getElementById('srv-id').value;
+    // Si la categoría ya existe con otra capitalización ("color" vs "Color"), se reutiliza la existente
+    const catEscrita = document.getElementById('srv-categoria').value.trim().replace(/\s+/g,' ');
+    const catFinal = categoriasExistentes().find(c => c.toLowerCase() === catEscrita.toLowerCase()) || catEscrita;
     const data = {
         nombre: document.getElementById('srv-nombre').value.trim(),
+        categoria: catFinal,
         duracion: parseInt(document.getElementById('srv-duracion').value),
         precio: parseInt(document.getElementById('srv-precio').value) || 0,
+        precioDesde: document.getElementById('srv-desde').checked,
         descripcion: document.getElementById('srv-descripcion').value.trim()
     };
     if(!data.nombre) { toast('Ingresá un nombre','error'); return; }
@@ -913,7 +1003,7 @@ window.abrirModalTurno = () => {
 
     // Poblar servicios
     const selSrv = document.getElementById('turno-servicio');
-    selSrv.innerHTML = servicios.map(s => `<option value="${s.id}">${s.nombre} (${s.duracion}min)</option>`).join('');
+    selSrv.innerHTML = opcionesServiciosAgrupadas();
 
     cargarHorariosDisponibles();
     abrirModal('modal-turno');
@@ -934,7 +1024,7 @@ window.editarTurno = (id) => {
     selProf.innerHTML = profesionales.map(p => `<option value="${p.id}" ${p.id===t.profesionalId?'selected':''}>${p.nombre}</option>`).join('');
 
     const selSrv = document.getElementById('turno-servicio');
-    selSrv.innerHTML = servicios.map(s => `<option value="${s.id}" ${s.id===t.servicioId?'selected':''}>${s.nombre} (${s.duracion}min)</option>`).join('');
+    selSrv.innerHTML = opcionesServiciosAgrupadas(t.servicioId);
 
     cargarHorariosDisponibles(t.hora);
     abrirModal('modal-turno');
