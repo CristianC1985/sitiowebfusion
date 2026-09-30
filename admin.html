@@ -493,6 +493,18 @@
 
 <!-- FIREBASE -->
 <script type="module">
+    const ocId = t => `${t.profesionalId}_${t.fecha}_${String(t.hora).replace(':','')}`;
+async function quitarOcupado(t) {
+    if (!t) return;
+    await quitarOcupado(turnos.find(x => x.id === id));
+    try { await deleteDoc(doc(db,'ocupados',ocId(t))); } catch(e) { console.warn(e); }
+}
+async function ponerOcupado(t) {
+    if (t.estado === 'cancelado') return;
+    await setDoc(doc(db,'ocupados',ocId(t)), {
+        profesionalId: t.profesionalId, fecha: t.fecha, hora: t.hora, turnoId: t.id || ''
+    });
+}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -1082,21 +1094,19 @@ window.guardarTurno = async () => {
     };
     if(!data.cliente||!data.fecha||!data.hora) { toast('Completá los campos obligatorios','error'); return; }
     try {
-        if(id) { await setDoc(doc(db,'turnos',id), data); }
-        else { data.creadoEn = new Date().toISOString(); await addDoc(collection(db,'turnos'), data); }
-        cerrarModal('modal-turno');
-        await cargarTurnos();
-        renderCalendario();
-        toast('Turno guardado ✓','success');
-    } catch(e) { toast('Error al guardar','error'); }
-};
-
-window.eliminarTurno = async (id) => {
-    if(!confirm('¿Eliminar este turno?')) return;
-    await deleteDoc(doc(db,'turnos',id));
+        try {
+    const anterior = id ? turnos.find(x => x.id === id) : null;
+    let turnoId = id;
+    if (id) { await setDoc(doc(db,'turnos',id), data); }
+    else { data.creadoEn = new Date().toISOString(); const r = await addDoc(collection(db,'turnos'), data); turnoId = r.id; }
+    await quitarOcupado(anterior);
+    await ponerOcupado({ ...data, id: turnoId });
+    cerrarModal('modal-turno');
     await cargarTurnos();
     renderCalendario();
-    toast('Turno eliminado','success');
+    toast('Turno guardado ✓','success');
+} catch(e) { toast('Error al guardar','error'); }
+    toast('Turno ','success');
 };
 
 // WhatsApp recordatorio con opciones
@@ -1133,7 +1143,8 @@ function enviarRecordatorio(t, tipo) {
         `✂️ *Servicio:* ${srv?.nombre||'Consultar'}\n` +
         `💇 *Profesional:* ${prof?.nombre||'Consultar'}\n\n` +
         `📍 José María Paz 1612, San Miguel\n\n` +
-        `Si necesitás cambiar o cancelar tu turno, avisanos con anticipación. ¡Te esperamos! 💛`
+`🔗 Cancelar (hasta 24 hs antes) o cambiar (hasta 2 hs antes): ${new URL('turnos.html', location.href).href}?turno=${t.id}\n\n` +
+`¡Te esperamos! 💛`
     );
     window.open(`https://wa.me/${numWsp}?text=${msg}`, '_blank');
     toast(`Recordatorio enviado a ${t.cliente} ✓`, 'success');

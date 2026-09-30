@@ -213,7 +213,7 @@
             </div>
             <div class="cal-grid" id="cal-grid"></div>
             <div class="btn-nav">
-                <button class="btn btn-ghost" onclick="irPaso(2)">← Volver</button>
+                <button class="btn btn-ghost" onclick="volverDeFecha()">← Volver</button>
                 <button class="btn btn-primary" id="btn-paso4" onclick="irPaso(4)" disabled>Siguiente →</button>
             </div>
         </div>
@@ -236,7 +236,7 @@
 
             <div class="resumen-card" id="resumen-card"></div>
 
-            <div class="form-card">
+            <div class="form-card" id="form-datos">
                 <h3>Completá tus datos</h3>
                 <div class="form-row">
                     <div class="form-group">
@@ -268,8 +268,16 @@
                 <p class="conf-sub" id="conf-mensaje">Tu turno fue registrado correctamente.<br>Te contactaremos para confirmar.</p>
                 <button class="btn btn-wsp" id="btn-wsp-conf">💬 Confirmar por WhatsApp</button>
                 <br><br>
+                <a class="btn btn-ghost" id="btn-gestionar" href="#" style="text-decoration:none">🔗 Ver mi turno · cambiar o cancelar</a>
+                <p class="conf-sub" style="font-size:1.3rem;margin:1.2rem 0 0">Guardá este link: podés cancelar hasta 24 hs antes y cambiar la fecha u hora hasta 2 hs antes.</p>
+                <br><br>
                 <button class="btn btn-ghost" onclick="irPaso(1);resetear()">Reservar otro turno</button>
             </div>
+        </div>
+
+        <!-- GESTIÓN DE MI TURNO (link personal) -->
+        <div class="wizard-step" id="step-7">
+            <div id="gestion-wrap"></div>
         </div>
 
     </div>
@@ -281,7 +289,7 @@
     <!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where }
+import { getFirestore, collection, addDoc, getDocs, getDoc, doc, writeBatch, query, where }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, signInAnonymously, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -316,6 +324,9 @@ function asegurarAuth() {
 // sel.prof: 'any' (primer disponible) o un profesional. sel.profAsig: profesional final del horario elegido.
 let profesionales = [], servicios = [], turnosExistentes = [];
 let sel = { srv: null, prof: null, fecha: null, hora: null, profAsig: null };
+let modo = 'crear', gestion = null, avisoGestion = '';
+// Un documento en "ocupados" = un horario tomado (sin datos personales). El id evita dobles reservas.
+const idOcupado = (profId, fecha, hora) => `${profId}_${fecha}_${String(hora).replace(':','')}`;
 let calFecha = new Date();
 const SIN_CAT = 'Sin categoría';
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -373,7 +384,7 @@ function disponibilidad(fecha) {
     return [...mapa.entries()].sort((a,b) => a[0] > b[0] ? 1 : -1);
 }
 async function cargarTurnosFecha(fecha) {
-    const snap = await getDocs(query(collection(db,'turnos'), where('fecha','==',fecha)));
+    const snap = await getDocs(query(collection(db,'ocupados'), where('fecha','==',fecha)));
     const delDia = snap.docs.map(d=>({id:d.id,...d.data()}));
     turnosExistentes = [...turnosExistentes.filter(t=>t.fecha!==fecha), ...delDia];
 }
@@ -381,14 +392,15 @@ async function cargarTurnosFecha(fecha) {
 // ── Carga inicial ──────────────────────────
 async function init() {
     await asegurarAuth();
-    const [snapP, snapS, snapT] = await Promise.all([
+    const [snapP, snapS] = await Promise.all([
         getDocs(collection(db,'profesionales')),
-        getDocs(collection(db,'servicios')),
-        getDocs(collection(db,'turnos'))
+        getDocs(collection(db,'servicios'))
     ]);
     profesionales = snapP.docs.map(d=>({id:d.id,...d.data()}));
     servicios = snapS.docs.map(d=>({id:d.id,...d.data()}));
-    turnosExistentes = snapT.docs.map(d=>({id:d.id,...d.data()}));
+    // Si entra con su link personal (?turno=ID) mostramos la gestión de ese turno
+    const idTurno = new URLSearchParams(location.search).get('turno');
+    if(idTurno) { await abrirGestion(idTurno); return; }
     renderServicios();
 }
 
@@ -545,6 +557,7 @@ function renderResumen() {
 }
 
 window.confirmarTurno = async () => {
+    if(modo === 'editar') return guardarCambio();
     const nombre = document.getElementById('cli-nombre').value.trim();
     const tel = document.getElementById('cli-tel').value.trim();
     const email = document.getElementById('cli-email').value.trim();
@@ -565,7 +578,9 @@ window.confirmarTurno = async () => {
         }
         sel.profAsig = libre[1];
 
-        await addDoc(collection(db,'turnos'), {
+        const turnoRef = doc(collection(db,'turnos'));
+        const batch = writeBatch(db);
+        batch.set(turnoRef, {
             cliente: nombre, tel, email,
             profesionalId: sel.profAsig.id,
             servicioId: sel.srv.id,
@@ -573,6 +588,12 @@ window.confirmarTurno = async () => {
             estado: 'pendiente',
             creadoEn: new Date().toISOString()
         });
+        batch.set(doc(db,'ocupados', idOcupado(sel.profAsig.id, sel.fecha, sel.hora)), {
+            profesionalId: sel.profAsig.id, fecha: sel.fecha, hora: sel.hora, turnoId: turnoRef.id
+        });
+        await batch.commit();   // si el horario ya estaba tomado, falla y no se guarda nada
+        const linkGestion = `${location.origin}${location.pathname}?turno=${turnoRef.id}`;
+        document.getElementById('btn-gestionar').href = linkGestion;
 
         const [y,m,d] = sel.fecha.split('-');
         const fechaStr = `${parseInt(d)} de ${MESES[parseInt(m)-1]}`;
@@ -612,11 +633,139 @@ window.confirmarTurno = async () => {
         irPaso(6);
     } catch(e) {
         console.error(e);
-        alert('Hubo un error. Intentá de nuevo.');
+        if(e.code === 'permission-denied') { alert('😕 Ese horario se acaba de ocupar. Elegí otro, por favor.'); irPaso(4); }
+        else alert('Hubo un error. Intentá de nuevo.');
     } finally {
         btn.disabled = false; btn.textContent = '✓ Confirmar turno';
     }
 };
+
+// ── GESTIÓN DEL TURNO (link personal): cancelar hasta 24 hs antes, modificar hasta 2 hs antes ──
+const HS_CANCELAR = 24, HS_MODIFICAR = 2;
+const horasHasta = (t) => (new Date(`${t.fecha}T${t.hora}`) - new Date()) / 36e5;
+const wspSalon = (texto) => `https://wa.me/${WSP_FUSION}?text=${encodeURIComponent(texto)}`;
+const fechaLarga = (f) => { const [y,m,d] = f.split('-'); return `${parseInt(d)} de ${MESES[parseInt(m)-1]} de ${y}`; };
+
+async function avisarSalon(tipo, t, prof, srv) {
+    try {
+        await fetch('https://formspree.io/f/xyzyjlky', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({
+                tipo, cliente: t.cliente, whatsapp: t.tel,
+                profesional: prof?.nombre, servicio: srv?.nombre,
+                fecha: fechaLarga(t.fecha), hora: `${t.hora}hs`,
+                _subject: `${tipo}: ${t.cliente} — ${fechaLarga(t.fecha)} ${t.hora}hs`
+            })
+        });
+    } catch(e) { console.warn('Aviso no enviado:', e); }
+}
+
+async function abrirGestion(id) {
+    let snap = null;
+    try { snap = await getDoc(doc(db,'turnos',id)); } catch(e) { console.warn(e); }
+    if(!snap || !snap.exists()) {
+        document.getElementById('gestion-wrap').innerHTML = `<div class="confirmacion"><div class="conf-icon">🔍</div><h2 class="conf-title">No encontramos tu turno</h2>
+            <p class="conf-sub">El link no es válido o el turno fue eliminado. Escribinos por WhatsApp y lo resolvemos.</p>
+            <a class="btn btn-wsp" style="text-decoration:none" target="_blank" href="${wspSalon('Hola! Tengo una consulta sobre mi turno.')}">💬 Escribir al salón</a></div>`;
+        irPaso(7); return;
+    }
+    gestion = { id, ...snap.data() };
+    renderGestion();
+    irPaso(7);
+}
+
+function renderGestion() {
+    const t = gestion;
+    const srv = servicios.find(s => s.id === t.servicioId);
+    const prof = profesionales.find(p => p.id === t.profesionalId);
+    const h = horasHasta(t);
+    const vigente = (t.estado === 'pendiente' || t.estado === 'confirmado') && h > 0;
+    const precio = precioTexto(srv);
+    const wsp = wspSalon(`Hola! Necesito ayuda con mi turno de ${srv?.nombre||''} el ${fechaLarga(t.fecha)} a las ${t.hora}hs (a nombre de ${t.cliente}).`);
+    let acciones = '';
+    if(t.estado === 'cancelado') {
+        acciones = `<p class="conf-sub">Este turno está <strong>cancelado</strong>.</p><button class="btn btn-primary" onclick="irPaso(1);resetear()">Reservar otro turno</button>`;
+    } else if(!vigente) {
+        acciones = `<p class="conf-sub">Este turno ya pasó.</p><button class="btn btn-primary" onclick="irPaso(1);resetear()">Reservar otro turno</button>`;
+    } else {
+        acciones = (h >= HS_MODIFICAR
+            ? `<button class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:1rem" onclick="modificarMiTurno()">📅 Cambiar fecha u hora</button>`
+            : `<p class="wizard-sub" style="margin-bottom:1rem">Faltan menos de ${HS_MODIFICAR} hs: ya no se puede modificar online.</p>`) +
+        (h >= HS_CANCELAR
+            ? `<button class="btn btn-ghost" style="width:100%;justify-content:center;margin-bottom:1rem" onclick="cancelarMiTurno()">✕ Cancelar mi turno</button>`
+            : `<p class="wizard-sub" style="margin-bottom:1rem">Para cancelar se necesitan al menos ${HS_CANCELAR} hs de anticipación.</p>`) +
+        (h < HS_CANCELAR ? `<a class="btn btn-wsp" style="text-decoration:none" target="_blank" href="${wsp}">💬 Escribir al salón</a>` : '');
+    }
+    document.getElementById('gestion-wrap').innerHTML = `
+        <p class="wizard-title">Tu turno</p>
+        <p class="wizard-sub">${avisoGestion || 'Podés cancelarlo hasta 24 hs antes o cambiarlo hasta 2 hs antes.'}</p>
+        <div class="resumen-card">
+            <h3>${t.cliente}</h3>
+            <div class="resumen-row"><span class="resumen-label">Servicio</span><span class="resumen-valor">${srv?.nombre||'—'}${precio?` · ${precio}`:''}</span></div>
+            <div class="resumen-row"><span class="resumen-label">Profesional</span><span class="resumen-valor">${prof?.nombre||'—'}</span></div>
+            <div class="resumen-row"><span class="resumen-label">Fecha</span><span class="resumen-valor">${fechaLarga(t.fecha)}</span></div>
+            <div class="resumen-row"><span class="resumen-label">Hora</span><span class="resumen-valor">${t.hora}hs</span></div>
+            <div class="resumen-row"><span class="resumen-label">Estado</span><span class="resumen-valor">${t.estado}</span></div>
+        </div>${acciones}`;
+    avisoGestion = '';
+}
+
+window.cancelarMiTurno = async () => {
+    if(horasHasta(gestion) < HS_CANCELAR) { alert(`Ya faltan menos de ${HS_CANCELAR} hs. Escribinos por WhatsApp.`); renderGestion(); return; }
+    if(!confirm('¿Seguro que querés cancelar tu turno?')) return;
+    try {
+        const batch = writeBatch(db);
+        batch.update(doc(db,'turnos',gestion.id), { estado:'cancelado', updatedAt:new Date().toISOString() });
+        batch.delete(doc(db,'ocupados', idOcupado(gestion.profesionalId, gestion.fecha, gestion.hora)));
+        await batch.commit();
+        await avisarSalon('❌ Turno CANCELADO por el cliente', gestion, profesionales.find(p=>p.id===gestion.profesionalId), servicios.find(s=>s.id===gestion.servicioId));
+        gestion.estado = 'cancelado';
+        avisoGestion = 'Tu turno fue cancelado. ¡Gracias por avisar!';
+        renderGestion();
+    } catch(e) { console.error(e); alert('No pudimos cancelar el turno. Escribinos por WhatsApp.'); }
+};
+
+window.modificarMiTurno = () => {
+    if(horasHasta(gestion) < HS_MODIFICAR) { alert(`Ya faltan menos de ${HS_MODIFICAR} hs. Escribinos por WhatsApp.`); renderGestion(); return; }
+    const srv = servicios.find(s => s.id === gestion.servicioId);
+    const prof = profesionales.find(p => p.id === gestion.profesionalId);
+    if(!srv || !prof) { alert('No pudimos cargar los datos de tu turno. Escribinos por WhatsApp.'); return; }
+    modo = 'editar';
+    sel = { srv, prof, fecha:null, hora:null, profAsig:null };
+    irPaso(3);
+};
+
+window.volverDeFecha = () => {
+    if(modo === 'editar') { modo = 'crear'; renderGestion(); irPaso(7); }
+    else irPaso(2);
+};
+
+async function guardarCambio() {
+    const btn = document.getElementById('btn-confirmar');
+    btn.disabled = true; btn.textContent = 'Guardando...';
+    try {
+        if(horasHasta(gestion) < HS_MODIFICAR) { alert(`Ya faltan menos de ${HS_MODIFICAR} hs. Escribinos por WhatsApp.`); modo = 'crear'; renderGestion(); irPaso(7); return; }
+        await cargarTurnosFecha(sel.fecha);
+        const libre = disponibilidad(sel.fecha).find(x => x[0] === sel.hora);
+        if(!libre) { alert('😕 Ese horario se acaba de ocupar. Elegí otro, por favor.'); irPaso(4); return; }
+        const p = libre[1];
+        const batch = writeBatch(db);
+        batch.update(doc(db,'turnos',gestion.id), { fecha:sel.fecha, hora:sel.hora, profesionalId:p.id, estado:'pendiente', updatedAt:new Date().toISOString() });
+        batch.delete(doc(db,'ocupados', idOcupado(gestion.profesionalId, gestion.fecha, gestion.hora)));
+        batch.set(doc(db,'ocupados', idOcupado(p.id, sel.fecha, sel.hora)), { profesionalId:p.id, fecha:sel.fecha, hora:sel.hora, turnoId:gestion.id });
+        await batch.commit();
+        gestion = { ...gestion, fecha:sel.fecha, hora:sel.hora, profesionalId:p.id, estado:'pendiente' };
+        await avisarSalon('🔄 Turno MODIFICADO por el cliente', gestion, p, sel.srv);
+        modo = 'crear';
+        avisoGestion = '✅ Cambio guardado. El salón te lo va a confirmar por WhatsApp.';
+        renderGestion(); irPaso(7);
+    } catch(e) {
+        console.error(e);
+        if(e.code === 'permission-denied') { alert('😕 Ese horario se acaba de ocupar. Elegí otro, por favor.'); irPaso(4); }
+        else alert('Hubo un error. Intentá de nuevo.');
+    } finally { btn.disabled = false; btn.textContent = '✓ Guardar cambio'; }
+}
 
 // ── Navegación pasos ───────────────────────
 window.irPaso = (n) => {
@@ -631,12 +780,19 @@ window.irPaso = (n) => {
     if(n===2) renderProfesionales();
     if(n===3) { calFecha = sel.fecha ? new Date(sel.fecha+'T12:00') : new Date(); document.getElementById('btn-paso4').disabled = !sel.fecha; renderCal(); }
     if(n===4) renderHorarios();
-    if(n===5) renderResumen();
+    if(n===5) {
+        renderResumen();
+        const ed = modo === 'editar';
+        document.getElementById('form-datos').style.display = ed ? 'none' : 'block';
+        document.getElementById('btn-confirmar').textContent = ed ? '✓ Guardar cambio' : '✓ Confirmar turno';
+    }
+    document.querySelector('.steps-bar').style.display = n===7 ? 'none' : '';
     window.scrollTo({top:0,behavior:'smooth'});
 };
 
 window.resetear = () => {
     sel = { srv:null, prof:null, fecha:null, hora:null, profAsig:null };
+    modo = 'crear'; gestion = null;
     document.getElementById('btn-paso2').disabled = true;
     document.getElementById('cli-nombre').value='';
     document.getElementById('cli-tel').value='';
