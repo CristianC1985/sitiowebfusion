@@ -1,5 +1,11 @@
 {
-  "devDependencies": {
-    "eslint": "^10.9.1"
-  }
+  "name": "fusion-whatsapp",
+  "description": "Avisos automáticos por WhatsApp para Fusión Peluquería",
+  "main": "index.js",
+  "engines": { "node": "20" },
+  "dependencies": {
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^6.0.0"
+  },
+  "private": true
 }

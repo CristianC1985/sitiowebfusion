@@ -66,6 +66,10 @@
         .srv-cat:first-child{padding-top:0}
         .srv-desde{font-size:1.2rem;font-weight:600;color:#888;text-transform:lowercase}
 
+        .prof-card.no-disp{opacity:.55;cursor:not-allowed}
+        .prof-vac{margin-top:.8rem;font-size:1.2rem;font-weight:700;color:#8a5a00;background:#fff3cd;border-radius:50px;padding:.3rem 1rem;display:inline-block}
+        .form-group input[type=file]{padding:.9rem 1rem;font-size:1.3rem}
+
         /* CALENDARIO */
         .cal-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.6rem}
         .cal-nav h3{font-family:'Playfair Display',serif;font-size:2rem;color:var(--negro)}
@@ -250,8 +254,7 @@
                 </div>
                 <div class="form-group">
                     <label>Email (opcional)</label>
-                    <input type="email" id="cli-email" placeholder="tu@email.com">
-                </div>
+                    <input type="email" id="cli-email" placeholder="tu@email.com"></div>
             </div>
 
             <div class="btn-nav">
@@ -267,6 +270,8 @@
                 <h2 class="conf-title">¡Turno reservado!</h2>
                 <p class="conf-sub" id="conf-mensaje">Tu turno fue registrado correctamente.<br>Te contactaremos para confirmar.</p>
                 <button class="btn btn-wsp" id="btn-wsp-conf">💬 Confirmar por WhatsApp</button>
+                <br><br>
+                <a class="btn btn-wsp" id="btn-wsp-cliente" target="_blank" style="text-decoration:none;margin-top:0">📲 Enviarme el link por WhatsApp</a>
                 <br><br>
                 <a class="btn btn-ghost" id="btn-gestionar" href="#" style="text-decoration:none">🔗 Ver mi turno · cambiar o cancelar</a>
                 <p class="conf-sub" style="font-size:1.3rem;margin:1.2rem 0 0">Guardá este link: podés cancelar hasta 24 hs antes y cambiar la fecha u hora hasta 2 hs antes.</p>
@@ -306,6 +311,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+// Mail al cliente con EmailJS (claves públicas: pueden estar en la página)
+const EMAILJS = { service: 'service_6k9rv0h', template: 'template_ad9nvnj', key: '6Iw8_ANTcJqIgKOvZ' };
+const DIRECCION = 'José María Paz 1612, San Miguel';
 const WSP_FUSION = '5491173668263';
 
 function asegurarAuth() {
@@ -325,6 +333,7 @@ function asegurarAuth() {
 let profesionales = [], servicios = [], turnosExistentes = [];
 let sel = { srv: null, prof: null, fecha: null, hora: null, profAsig: null };
 let modo = 'crear', gestion = null, avisoGestion = '';
+let bloqueos = [];
 // Un documento en "ocupados" = un horario tomado (sin datos personales). El id evita dobles reservas.
 const idOcupado = (profId, fecha, hora) => `${profId}_${fecha}_${String(hora).replace(':','')}`;
 let calFecha = new Date();
@@ -352,6 +361,15 @@ function elegibles() {
         (sel.prof === 'any' || (sel.prof && p.id === sel.prof.id))
     );
 }
+const rangoOK = (b, f) => f >= b.fechaDesde && f <= (b.fechaHasta || b.fechaDesde);
+const bloqueadoDia = (pid, f) => bloqueos.some(b => b.profesionalId===pid && b.tipo!=='horas' && rangoOK(b,f));
+const bloqueadoHora = (pid, f, h) => bloqueos.some(b => b.profesionalId===pid && b.tipo==='horas' && rangoOK(b,f) && h >= b.horaDesde && h < b.horaHasta);
+const fmtCorta = f => { const [y,m,d] = f.split('-'); return `${d}/${m}`; };
+function vacaciones(pid) {
+    const hoy = fechaISO(new Date());
+    const v = bloqueos.filter(b => b.profesionalId===pid && b.tipo==='vacaciones').sort((a,b)=>a.fechaDesde>b.fechaDesde?1:-1);
+    return { ahora: v.find(b => rangoOK(b,hoy)), proxima: v.find(b => b.fechaDesde > hoy) };
+}
 function generarSlots(inicio,fin,intervalo){
     const slots=[];
     let [h,m]=inicio.split(':').map(Number);
@@ -370,13 +388,13 @@ function disponibilidad(fecha) {
     const minAhora = ahora.getHours()*60 + ahora.getMinutes();
     const diaSem = new Date(fecha+'T12:00').getDay();
     const mapa = new Map();
-    elegibles().filter(p => (p.dias||[]).includes(diaSem)).forEach(p => {
+    elegibles().filter(p => (p.dias||[]).includes(diaSem) && !bloqueadoDia(p.id, fecha)).forEach(p => {
         const ocupados = turnosExistentes
             .filter(t => t.fecha===fecha && t.profesionalId===p.id && t.estado!=='cancelado')
             .map(t => t.hora);
         generarSlots(p.horaInicio||'09:00', p.horaFin||'19:00', p.intervalo||60).forEach(h => {
             const [hh,mm] = h.split(':').map(Number);
-            if(ocupados.includes(h)) return;
+            if(ocupados.includes(h) || bloqueadoHora(p.id, fecha, h)) return;
             if(esHoy && hh*60+mm <= minAhora) return;
             if(!mapa.has(h)) mapa.set(h, p);
         });
@@ -398,6 +416,11 @@ async function init() {
     ]);
     profesionales = snapP.docs.map(d=>({id:d.id,...d.data()}));
     servicios = snapS.docs.map(d=>({id:d.id,...d.data()}));
+    try {   // bloqueos de profesionales (días, horarios, vacaciones)
+        const hoyISO = fechaISO(new Date());
+        const sb = await getDocs(collection(db,'bloqueos'));
+        bloqueos = sb.docs.map(d=>({id:d.id,...d.data()})).filter(b => (b.fechaHasta||b.fechaDesde) >= hoyISO);
+    } catch(e) { console.warn('Sin bloqueos', e); }
     // Si entra con su link personal (?turno=ID) mostramos la gestión de ese turno
     const idTurno = new URLSearchParams(location.search).get('turno');
     if(idTurno) { await abrirGestion(idTurno); return; }
@@ -440,6 +463,7 @@ window.selSrv = (id) => {
     document.querySelectorAll('.srv-card').forEach(c=>c.classList.remove('seleccionado'));
     document.getElementById(`sc-${id}`).classList.add('seleccionado');
     document.getElementById('btn-paso2').disabled = false;
+    setTimeout(() => irPaso(2), 150);   // avanza solo al elegir el servicio
 };
 
 // ── PASO 2: Profesional (o primero disponible) ──
@@ -450,17 +474,22 @@ function renderProfesionales() {
     document.getElementById('btn-paso3').disabled = true;
     if(!profs.length) { grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><span>💇</span>No hay profesionales para este servicio.</div>'; return; }
     grid.innerHTML = profs.map(p => `
-        <div class="prof-card" onclick="selProf('${p.id}')" id="pc-${p.id}">
+        <div class="prof-card${vacaciones(p.id).ahora?' no-disp':''}" ${vacaciones(p.id).ahora?'':`onclick="selProf('${p.id}')"`} id="pc-${p.id}">
             <div class="prof-avatar">
                 ${p.foto ? `<img src="${p.foto}" alt="${p.nombre}">` : '💇'}
             </div>
             <div class="prof-nombre">${p.nombre}</div>
             <div class="prof-esp">${p.especialidad||''}</div>
+            ${(() => { const v = vacaciones(p.id);
+                if(v.ahora) return `<div class="prof-vac">🌴 De vacaciones hasta el ${fmtCorta(v.ahora.fechaHasta||v.ahora.fechaDesde)}</div>`;
+                if(v.proxima) return `<div class="prof-vac">🌴 Vacaciones del ${fmtCorta(v.proxima.fechaDesde)} al ${fmtCorta(v.proxima.fechaHasta||v.proxima.fechaDesde)}</div>`;
+                return ''; })()}
         </div>
     `).join('');
 }
 
 window.selProf = (id) => {
+    if(vacaciones(id).ahora) return;
     sel.prof = profesionales.find(p=>p.id===id);
     sel.fecha = null; sel.hora = null; sel.profAsig = null;
     document.querySelectorAll('.prof-card').forEach(c=>c.classList.remove('seleccionado'));
@@ -495,7 +524,7 @@ function renderCal() {
         const diaSem = new Date(fechaStr+'T12:00').getDay();
         const esHoy = d===hoy.getDate()&&month===hoy.getMonth()&&year===hoy.getFullYear();
         const esPasado = new Date(fechaStr+'T23:59') < hoy && !esHoy;
-        const esLaboral = diasLaborales.has(diaSem);
+        const esLaboral = elegibles().some(p => (p.dias||[]).includes(diaSem) && !bloqueadoDia(p.id, fechaStr));
         const esSel = fechaStr===sel.fecha;
         const cls = ['cal-dia',esHoy?'hoy':'',esSel?'seleccionado':'',esPasado?'pasado':'',!esLaboral?'no-laboral':''].filter(Boolean).join(' ');
         const click = (!esPasado&&esLaboral) ? `onclick="selFecha('${fechaStr}')"` : '';
@@ -598,6 +627,13 @@ window.confirmarTurno = async () => {
         const [y,m,d] = sel.fecha.split('-');
         const fechaStr = `${parseInt(d)} de ${MESES[parseInt(m)-1]}`;
 
+        // Link para el cliente: WhatsApp (chat con su propio número) y, si está activo, mail
+        const numCli = tel.replace(/\D/g,'');
+        const numWsp = numCli.startsWith('54') ? numCli : `549${numCli.replace(/^0/,'')}`;
+        const msgCli = `¡Hola ${nombre}! Tu turno en Fusión Peluquería: ${sel.srv?.nombre}, ${fechaStr} a las ${sel.hora}hs con ${sel.profAsig?.nombre}. Para cancelar (hasta 24 hs antes) o cambiar la fecha/hora (hasta 2 hs antes) entrá acá: ${linkGestion}`;
+        document.getElementById('btn-wsp-cliente').href = `https://wa.me/${numWsp}?text=${encodeURIComponent(msgCli)}`;
+        enviarMailCliente('confirmacion', { cliente: nombre, email, fecha: sel.fecha, hora: sel.hora }, turnoRef.id, sel.profAsig, sel.srv);
+
         try {
             await fetch('https://formspree.io/f/xyzyjlky', {
                 method: 'POST',
@@ -627,7 +663,7 @@ window.confirmarTurno = async () => {
             window.open(`https://wa.me/${WSP_FUSION}?text=${msgSalon}`, '_blank');
 
         document.getElementById('conf-mensaje').textContent =
-            `Tu turno para el ${fechaStr} a las ${sel.hora}hs con ${sel.profAsig?.nombre} fue registrado. Te confirmaremos por WhatsApp a la brevedad.`;
+            `Tu turno para el ${fechaStr} a las ${sel.hora}hs con ${sel.profAsig?.nombre} fue registrado.${email ? ` Te enviamos el detalle a ${email}.` : ''} Te confirmaremos por WhatsApp a la brevedad.`;
 
         await cargarTurnosFecha(sel.fecha);
         irPaso(6);
@@ -659,6 +695,28 @@ async function avisarSalon(tipo, t, prof, srv) {
             })
         });
     } catch(e) { console.warn('Aviso no enviado:', e); }
+}
+
+const TEXTOS_MAIL = {
+    confirmacion: { asunto: 'Tu turno en Fusión Peluquería', titulo: 'Tu turno quedó registrado ✅', mensaje: 'te esperamos en Fusión Peluquería. Estos son los datos de tu turno:', boton: 'Ver, cambiar o cancelar mi turno', pie: 'Podés cancelar hasta 24 hs antes y cambiar la fecha u hora hasta 2 hs antes. Tenemos 10 minutos de tolerancia.' },
+    modificado: { asunto: 'Tu turno fue modificado', titulo: 'Tu turno fue modificado 🔄', mensaje: 'tu turno fue cambiado. Estos son los nuevos datos:', boton: 'Ver, cambiar o cancelar mi turno', pie: 'Podés cancelar hasta 24 hs antes y cambiar la fecha u hora hasta 2 hs antes. Tenemos 10 minutos de tolerancia.' },
+    cancelado: { asunto: 'Tu turno fue cancelado', titulo: 'Turno cancelado', mensaje: 'tu turno quedó cancelado. Estos eran los datos:', boton: 'Reservar un nuevo turno', pie: 'Gracias por avisarnos. Cuando quieras, podés reservar otro turno.' }
+};
+async function enviarMailCliente(tipo, t, id, prof, srv) {
+    if(!t.email) return;
+    const x = TEXTOS_MAIL[tipo];
+    const base = `${location.origin}${location.pathname}`;
+    try {
+        const r = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ service_id: EMAILJS.service, template_id: EMAILJS.template, user_id: EMAILJS.key, template_params: {
+                to_email: t.email, asunto: x.asunto, titulo: x.titulo, mensaje: x.mensaje, cliente: t.cliente,
+                servicio: srv?.nombre || '', profesional: prof?.nombre || '', fecha: fechaLarga(t.fecha), hora: t.hora,
+                direccion: DIRECCION, link: tipo === 'cancelado' ? base : `${base}?turno=${id}`, boton: x.boton, pie: x.pie
+            } })
+        });
+        if(!r.ok) console.warn('Mail no enviado:', await r.text());
+    } catch(e) { console.warn('Mail no enviado:', e); }
 }
 
 async function abrirGestion(id) {
@@ -720,6 +778,7 @@ window.cancelarMiTurno = async () => {
         batch.delete(doc(db,'ocupados', idOcupado(gestion.profesionalId, gestion.fecha, gestion.hora)));
         await batch.commit();
         await avisarSalon('❌ Turno CANCELADO por el cliente', gestion, profesionales.find(p=>p.id===gestion.profesionalId), servicios.find(s=>s.id===gestion.servicioId));
+        enviarMailCliente('cancelado', gestion, gestion.id, profesionales.find(p=>p.id===gestion.profesionalId), servicios.find(s=>s.id===gestion.servicioId));
         gestion.estado = 'cancelado';
         avisoGestion = 'Tu turno fue cancelado. ¡Gracias por avisar!';
         renderGestion();
@@ -757,6 +816,7 @@ async function guardarCambio() {
         await batch.commit();
         gestion = { ...gestion, fecha:sel.fecha, hora:sel.hora, profesionalId:p.id, estado:'pendiente' };
         await avisarSalon('🔄 Turno MODIFICADO por el cliente', gestion, p, sel.srv);
+        enviarMailCliente('modificado', gestion, gestion.id, p, sel.srv);
         modo = 'crear';
         avisoGestion = '✅ Cambio guardado. El salón te lo va a confirmar por WhatsApp.';
         renderGestion(); irPaso(7);
@@ -766,6 +826,7 @@ async function guardarCambio() {
         else alert('Hubo un error. Intentá de nuevo.');
     } finally { btn.disabled = false; btn.textContent = '✓ Guardar cambio'; }
 }
+
 
 // ── Navegación pasos ───────────────────────
 window.irPaso = (n) => {
