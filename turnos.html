@@ -255,6 +255,10 @@
                 <div class="form-group">
                     <label>Email (opcional)</label>
                     <input type="email" id="cli-email" placeholder="tu@email.com"></div>
+                <div class="form-group">
+                    <label>Nota sobre la cita (opcional)</label>
+                    <textarea id="cli-nota" rows="3" maxlength="300" placeholder="Ej: quiero un cambio de look, voy a llegar unos minutos tarde, tengo una consulta…" style="width:100%;font:inherit;padding:.8rem 1rem;border:1.5px solid #ddd;border-radius:10px;resize:vertical"></textarea>
+                </div>
             </div>
 
             <div class="btn-nav">
@@ -274,7 +278,7 @@
                 <a class="btn btn-wsp" id="btn-wsp-cliente" target="_blank" style="text-decoration:none;margin-top:0">📲 Enviarme el link por WhatsApp</a>
                 <br><br>
                 <a class="btn btn-ghost" id="btn-gestionar" href="#" style="text-decoration:none">🔗 Ver mi turno · cambiar o cancelar</a>
-                <p class="conf-sub" style="font-size:1.3rem;margin:1.2rem 0 0">Guardá este link: podés cancelar hasta 24 hs antes y cambiar la fecha u hora hasta 2 hs antes.</p>
+                <p class="conf-sub" style="font-size:1.3rem;margin:1.2rem 0 0">Guardá este link: podés cancelar en cualquier momento antes del turno y cambiar la fecha u hora hasta 2 hs antes.</p>
                 <br><br>
                 <button class="btn btn-ghost" onclick="irPaso(1);resetear()">Reservar otro turno</button>
             </div>
@@ -314,6 +318,7 @@ const auth = getAuth(app);
 // Mail al cliente con EmailJS (claves públicas: pueden estar en la página)
 const EMAILJS = { service: 'service_6k9rv0h', template: 'template_ad9nvnj', key: '6Iw8_ANTcJqIgKOvZ' };
 const DIRECCION = 'José María Paz 1612, San Miguel';
+const MAPS_URL = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('José María Paz 1612, San Miguel, Buenos Aires, Argentina');
 const WSP_FUSION = '5491173668263';
 
 function asegurarAuth() {
@@ -590,6 +595,7 @@ window.confirmarTurno = async () => {
     const nombre = document.getElementById('cli-nombre').value.trim();
     const tel = document.getElementById('cli-tel').value.trim();
     const email = document.getElementById('cli-email').value.trim();
+    const nota = document.getElementById('cli-nota').value.trim().slice(0,300);
     if(!nombre||!tel) { alert('Completá tu nombre y WhatsApp para continuar.'); return; }
 
     const btn = document.getElementById('btn-confirmar');
@@ -611,6 +617,7 @@ window.confirmarTurno = async () => {
         const batch = writeBatch(db);
         batch.set(turnoRef, {
             cliente: nombre, tel, email,
+            ...(nota ? { notaCliente: nota } : {}),
             profesionalId: sel.profAsig.id,
             servicioId: sel.srv.id,
             fecha: sel.fecha, hora: sel.hora,
@@ -630,7 +637,7 @@ window.confirmarTurno = async () => {
         // Link para el cliente: WhatsApp (chat con su propio número) y, si está activo, mail
         const numCli = tel.replace(/\D/g,'');
         const numWsp = numCli.startsWith('54') ? numCli : `549${numCli.replace(/^0/,'')}`;
-        const msgCli = `¡Hola ${nombre}! Tu turno en Fusión Peluquería: ${sel.srv?.nombre}, ${fechaStr} a las ${sel.hora}hs con ${sel.profAsig?.nombre}. Para cancelar (hasta 24 hs antes) o cambiar la fecha/hora (hasta 2 hs antes) entrá acá: ${linkGestion}`;
+        const msgCli = `¡Hola ${nombre}! Tu turno en Fusión Peluquería: ${sel.srv?.nombre}, ${fechaStr} a las ${sel.hora}hs con ${sel.profAsig?.nombre}. Para cancelar o cambiar la fecha/hora (hasta 2 hs antes) entrá acá: ${linkGestion}`;
         document.getElementById('btn-wsp-cliente').href = `https://wa.me/${numWsp}?text=${encodeURIComponent(msgCli)}`;
         enviarMailCliente('confirmacion', { cliente: nombre, email, fecha: sel.fecha, hora: sel.hora }, turnoRef.id, sel.profAsig, sel.srv);
 
@@ -643,6 +650,7 @@ window.confirmarTurno = async () => {
                     cliente: nombre,
                     whatsapp: tel,
                     email_cliente: email || 'No proporcionó',
+                    nota_cliente: nota || 'Sin nota',
                     profesional: sel.profAsig?.nombre,
                     servicio: sel.srv?.nombre,
                     fecha: `${fechaStr} de ${y}`,
@@ -677,29 +685,32 @@ window.confirmarTurno = async () => {
 };
 
 // ── GESTIÓN DEL TURNO (link personal): cancelar hasta 24 hs antes, modificar hasta 2 hs antes ──
-const HS_CANCELAR = 24, HS_MODIFICAR = 2;
+const HS_CANCELAR = 0, HS_MODIFICAR = 2; // cancelar: en cualquier momento antes del turno; cambiar: hasta 2 hs antes
+let canceladoAhora = false;
 const horasHasta = (t) => (new Date(`${t.fecha}T${t.hora}`) - new Date()) / 36e5;
 const wspSalon = (texto) => `https://wa.me/${WSP_FUSION}?text=${encodeURIComponent(texto)}`;
 const fechaLarga = (f) => { const [y,m,d] = f.split('-'); return `${parseInt(d)} de ${MESES[parseInt(m)-1]} de ${y}`; };
 
 async function avisarSalon(tipo, t, prof, srv) {
-    try {
-        await fetch('https://formspree.io/f/xyzyjlky', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-            body: JSON.stringify({
-                tipo, cliente: t.cliente, whatsapp: t.tel,
-                profesional: prof?.nombre, servicio: srv?.nombre,
-                fecha: fechaLarga(t.fecha), hora: `${t.hora}hs`,
-                _subject: `${tipo}: ${t.cliente} — ${fechaLarga(t.fecha)} ${t.hora}hs`
-            })
-        });
-    } catch(e) { console.warn('Aviso no enviado:', e); }
+    const body = JSON.stringify({
+        tipo, cliente: t.cliente, whatsapp: t.tel, email_cliente: t.email || 'No proporcionó',
+        profesional: prof?.nombre, servicio: srv?.nombre,
+        fecha: fechaLarga(t.fecha), hora: `${t.hora}hs`,
+        _subject: `${tipo}: ${t.cliente} — ${fechaLarga(t.fecha)} ${t.hora}hs`
+    });
+    for(let i = 0; i < 2; i++) { // un reintento si falla
+        try {
+            const r = await fetch('https://formspree.io/f/xyzyjlky', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body });
+            if(r.ok) return true;
+            console.warn('Formspree respondió', r.status);
+        } catch(e) { console.warn('Aviso no enviado:', e); }
+    }
+    return false;
 }
 
 const TEXTOS_MAIL = {
-    confirmacion: { asunto: 'Tu turno en Fusión Peluquería', titulo: 'Tu turno quedó registrado ✅', mensaje: 'te esperamos en Fusión Peluquería. Estos son los datos de tu turno:', boton: 'Ver, cambiar o cancelar mi turno', pie: 'Podés cancelar hasta 24 hs antes y cambiar la fecha u hora hasta 2 hs antes. Tenemos 10 minutos de tolerancia.' },
-    modificado: { asunto: 'Tu turno fue modificado', titulo: 'Tu turno fue modificado 🔄', mensaje: 'tu turno fue cambiado. Estos son los nuevos datos:', boton: 'Ver, cambiar o cancelar mi turno', pie: 'Podés cancelar hasta 24 hs antes y cambiar la fecha u hora hasta 2 hs antes. Tenemos 10 minutos de tolerancia.' },
+    confirmacion: { asunto: 'Tu turno en Fusión Peluquería', titulo: 'Tu turno quedó registrado ✅', mensaje: 'te esperamos en Fusión Peluquería. Estos son los datos de tu turno:', boton: 'Modificar o cancelar mi turno', pie: 'Podés cancelar tu turno cuando quieras desde el botón y cambiar la fecha u hora hasta 2 hs antes. Tenemos 10 minutos de tolerancia.' },
+    modificado: { asunto: 'Tu turno fue modificado', titulo: 'Tu turno fue modificado 🔄', mensaje: 'tu turno fue cambiado. Estos son los nuevos datos:', boton: 'Modificar o cancelar mi turno', pie: 'Podés cancelar tu turno cuando quieras desde el botón y cambiar la fecha u hora hasta 2 hs antes. Tenemos 10 minutos de tolerancia.' },
     cancelado: { asunto: 'Tu turno fue cancelado', titulo: 'Turno cancelado', mensaje: 'tu turno quedó cancelado. Estos eran los datos:', boton: 'Reservar un nuevo turno', pie: 'Gracias por avisarnos. Cuando quieras, podés reservar otro turno.' }
 };
 async function enviarMailCliente(tipo, t, id, prof, srv) {
@@ -712,7 +723,7 @@ async function enviarMailCliente(tipo, t, id, prof, srv) {
             body: JSON.stringify({ service_id: EMAILJS.service, template_id: EMAILJS.template, user_id: EMAILJS.key, template_params: {
                 to_email: t.email, asunto: x.asunto, titulo: x.titulo, mensaje: x.mensaje, cliente: t.cliente,
                 servicio: srv?.nombre || '', profesional: prof?.nombre || '', fecha: fechaLarga(t.fecha), hora: t.hora,
-                direccion: DIRECCION, link: tipo === 'cancelado' ? base : `${base}?turno=${id}`, boton: x.boton, pie: x.pie
+                direccion: DIRECCION, maps: MAPS_URL, link: tipo === 'cancelado' ? base : `${base}?turno=${id}`, boton: x.boton, pie: x.pie
             } })
         });
         if(!r.ok) console.warn('Mail no enviado:', await r.text());
@@ -741,6 +752,13 @@ function renderGestion() {
     const vigente = (t.estado === 'pendiente' || t.estado === 'confirmado') && h > 0;
     const precio = precioTexto(srv);
     const wsp = wspSalon(`Hola! Necesito ayuda con mi turno de ${srv?.nombre||''} el ${fechaLarga(t.fecha)} a las ${t.hora}hs (a nombre de ${t.cliente}).`);
+    if(t.estado === 'cancelado' && canceladoAhora) {
+        canceladoAhora = false;
+        document.getElementById('gestion-wrap').innerHTML = `<div class="confirmacion"><div class="conf-icon">✅</div><h2 class="conf-title">Tu reserva fue cancelada</h2>
+            <p class="conf-sub">Ya le avisamos al salón. Cancelaste tu turno de <strong>${srv?.nombre||''}</strong> del ${fechaLarga(t.fecha)} a las ${t.hora}hs. Te enviamos la confirmación por mail si nos dejaste uno.</p>
+            <button class="btn btn-primary" onclick="irPaso(1);resetear()">Reservar otro turno</button></div>`;
+        return;
+    }
     let acciones = '';
     if(t.estado === 'cancelado') {
         acciones = `<p class="conf-sub">Este turno está <strong>cancelado</strong>.</p><button class="btn btn-primary" onclick="irPaso(1);resetear()">Reservar otro turno</button>`;
@@ -757,7 +775,7 @@ function renderGestion() {
     }
     document.getElementById('gestion-wrap').innerHTML = `
         <p class="wizard-title">Tu turno</p>
-        <p class="wizard-sub">${avisoGestion || 'Podés cancelarlo hasta 24 hs antes o cambiarlo hasta 2 hs antes.'}</p>
+        <p class="wizard-sub">${avisoGestion || 'Podés cancelarlo cuando quieras o cambiarlo hasta 2 hs antes.'}</p>
         <div class="resumen-card">
             <h3>${t.cliente}</h3>
             <div class="resumen-row"><span class="resumen-label">Servicio</span><span class="resumen-valor">${srv?.nombre||'—'}${precio?` · ${precio}`:''}</span></div>
@@ -765,13 +783,15 @@ function renderGestion() {
             <div class="resumen-row"><span class="resumen-label">Fecha</span><span class="resumen-valor">${fechaLarga(t.fecha)}</span></div>
             <div class="resumen-row"><span class="resumen-label">Hora</span><span class="resumen-valor">${t.hora}hs</span></div>
             <div class="resumen-row"><span class="resumen-label">Estado</span><span class="resumen-valor">${t.estado}</span></div>
-        </div>${acciones}`;
+            ${t.notaCliente ? `<div class="resumen-row"><span class="resumen-label">Tu nota</span><span class="resumen-valor">${String(t.notaCliente).replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</span></div>` : ''}
+        </div>${acciones}
+        <a class="btn btn-ghost" style="text-decoration:none;width:100%;justify-content:center;margin-top:1rem" target="_blank" href="${MAPS_URL}">📍 Cómo llegar al salón</a>`;
     avisoGestion = '';
 }
 
 window.cancelarMiTurno = async () => {
-    if(horasHasta(gestion) < HS_CANCELAR) { alert(`Ya faltan menos de ${HS_CANCELAR} hs. Escribinos por WhatsApp.`); renderGestion(); return; }
-    if(!confirm('¿Seguro que querés cancelar tu turno?')) return;
+    if(horasHasta(gestion) < HS_CANCELAR) { alert(`Ya pasó la hora del turno. Escribinos por WhatsApp si necesitás ayuda.`); renderGestion(); return; }
+    if(!confirm('¿Querés cancelar tu reserva?\n\nEsta acción liberará el horario para que pueda ser reservado por otra persona.')) return;
     try {
         const batch = writeBatch(db);
         batch.update(doc(db,'turnos',gestion.id), { estado:'cancelado', updatedAt:new Date().toISOString() });
@@ -780,7 +800,7 @@ window.cancelarMiTurno = async () => {
         await avisarSalon('❌ Turno CANCELADO por el cliente', gestion, profesionales.find(p=>p.id===gestion.profesionalId), servicios.find(s=>s.id===gestion.servicioId));
         enviarMailCliente('cancelado', gestion, gestion.id, profesionales.find(p=>p.id===gestion.profesionalId), servicios.find(s=>s.id===gestion.servicioId));
         gestion.estado = 'cancelado';
-        avisoGestion = 'Tu turno fue cancelado. ¡Gracias por avisar!';
+        canceladoAhora = true;
         renderGestion();
     } catch(e) { console.error(e); alert('No pudimos cancelar el turno. Escribinos por WhatsApp.'); }
 };
@@ -858,6 +878,7 @@ window.resetear = () => {
     document.getElementById('cli-nombre').value='';
     document.getElementById('cli-tel').value='';
     document.getElementById('cli-email').value='';
+    document.getElementById('cli-nota').value='';
     renderServicios();
 };
 

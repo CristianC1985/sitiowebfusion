@@ -730,7 +730,7 @@ button:hover { background-color: #555; }
 .footer-marca__logo {
   font-family: 'PT Sans', serif;
   font-size: 3rem;
-  color: #fff;
+  color: #000000;
   margin-bottom: 1.5rem;
   display: block;
   line-height: 1.3;

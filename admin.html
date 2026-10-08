@@ -696,6 +696,7 @@ function tarjetaTurno(t) {
     ${t.foto?`<img class="turno-av" src="${esc(t.foto)}" alt="">`:''}<div class="turno-hora">${t.hora}</div>
     <div class="turno-info"><div class="turno-nombre">${esc(t.cliente)}${t.sobreturno?'<span class="badge badge-sobre">Sobreturno</span>':''}</div>
       <div class="turno-detalle">${esc(srv?.nombre||'Servicio')} · ${esc(prof?.nombre||'Profesional')} · ${formatFecha(t.fecha)}${t.tel?' · '+esc(t.tel):''}</div>
+      ${t.notaCliente ? `<div class="turno-detalle" style="color:#8a2a22;margin:4px 0">📝 ${esc(t.notaCliente)}</div>` : ''}
       <span class="badge badge-${t.estado||'pendiente'}">${t.estado||'pendiente'}</span></div>
     <div class="turno-acciones"><button class="btn btn-wsp btn-sm" onclick="enviarWsp('${t.id}')">💬 WSP</button>
       ${t.email && t.estado!=='cancelado' ? `<button class="btn btn-ghost btn-sm" onclick="enviarMailRecordatorio('${t.id}')" title="Enviar recordatorio por mail">✉️ Mail</button>` : ''}
@@ -830,7 +831,7 @@ async function mandarMailRecordatorio(t) {
       to_email: t.email, asunto: 'Recordatorio de tu turno en Fusión Peluquería', titulo: 'Recordatorio de tu turno ⏰',
       mensaje: `te recordamos que tenés turno ${cuando} en Fusión Peluquería:`, cliente: t.cliente,
       servicio: srv?.nombre || '', profesional: prof?.nombre || '', fecha: fechaMail(t.fecha), hora: t.hora,
-      direccion: 'José María Paz 1612, San Miguel', link, boton: 'Ver, cambiar o cancelar mi turno',
+      direccion: 'José María Paz 1612, San Miguel', maps: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('José María Paz 1612, San Miguel, Buenos Aires, Argentina'), link, boton: 'Modificar o cancelar mi turno',
       pie: 'Si no podés venir, cancelá tu turno con anticipación (hasta 24 hs antes). Tenemos 10 minutos de tolerancia.'
     } })
   });
