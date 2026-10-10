@@ -362,7 +362,7 @@ function precioTexto(s) {
 function elegibles() {
     if(!sel.srv) return [];
     return profesionales.filter(p =>
-        (p.servicios||[]).includes(sel.srv.id) &&
+        (p.servicios||[]).includes(sel.srv.id) && p.reservasOnline !== false &&
         (sel.prof === 'any' || (sel.prof && p.id === sel.prof.id))
     );
 }
@@ -386,6 +386,12 @@ function generarSlots(inicio,fin,intervalo){
     }
     return slots;
 }
+
+// ── Horarios del profesional (varios tramos por día). Compatible con el formato anterior (dias + horaInicio/horaFin) ──
+const horariosDe = p => (Array.isArray(p.horarios) && p.horarios.length) ? p.horarios : (p.dias||[]).map(d => ({ dia:d, desde:p.horaInicio||'09:00', hasta:p.horaFin||'19:00' }));
+const tramosDia = (p, dia) => horariosDe(p).filter(h => h.dia===dia).sort((a,b) => a.desde > b.desde ? 1 : -1).map(h => [h.desde, h.hasta]);
+const trabajaDia = (p, dia) => tramosDia(p, dia).length > 0;
+const slotsDia = (p, dia) => { const s = new Set(); tramosDia(p, dia).forEach(([d,h]) => generarSlots(d, h, p.intervalo||60).forEach(x => s.add(x))); return [...s].sort(); };
 // Devuelve [[hora, profesional], ...] con el primer profesional libre en cada horario
 function disponibilidad(fecha) {
     const ahora = new Date();
@@ -393,11 +399,11 @@ function disponibilidad(fecha) {
     const minAhora = ahora.getHours()*60 + ahora.getMinutes();
     const diaSem = new Date(fecha+'T12:00').getDay();
     const mapa = new Map();
-    elegibles().filter(p => (p.dias||[]).includes(diaSem) && !bloqueadoDia(p.id, fecha)).forEach(p => {
+    elegibles().filter(p => trabajaDia(p, diaSem) && !bloqueadoDia(p.id, fecha)).forEach(p => {
         const ocupados = turnosExistentes
             .filter(t => t.fecha===fecha && t.profesionalId===p.id && t.estado!=='cancelado')
             .map(t => t.hora);
-        generarSlots(p.horaInicio||'09:00', p.horaFin||'19:00', p.intervalo||60).forEach(h => {
+        slotsDia(p, diaSem).forEach(h => {
             const [hh,mm] = h.split(':').map(Number);
             if(ocupados.includes(h) || bloqueadoHora(p.id, fecha, h)) return;
             if(esHoy && hh*60+mm <= minAhora) return;
@@ -475,7 +481,7 @@ window.selSrv = (id) => {
 function renderProfesionales() {
     document.getElementById('srv-sel-nombre').textContent = sel.srv?.nombre || '';
     const grid = document.getElementById('prof-grid');
-    const profs = profesionales.filter(p => (p.servicios||[]).includes(sel.srv.id));
+    const profs = profesionales.filter(p => (p.servicios||[]).includes(sel.srv.id) && p.reservasOnline !== false && p.mostrarListado !== false);
     document.getElementById('btn-paso3').disabled = true;
     if(!profs.length) { grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><span>💇</span>No hay profesionales para este servicio.</div>'; return; }
     grid.innerHTML = profs.map(p => `
@@ -485,6 +491,7 @@ function renderProfesionales() {
             </div>
             <div class="prof-nombre">${p.nombre}</div>
             <div class="prof-esp">${p.especialidad||''}</div>
+            ${p.descripcion ? `<div class="prof-esp" style="font-size:.78rem;opacity:.8;margin-top:4px">${String(p.descripcion).replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</div>` : ''}
             ${(() => { const v = vacaciones(p.id);
                 if(v.ahora) return `<div class="prof-vac">🌴 De vacaciones hasta el ${fmtCorta(v.ahora.fechaHasta||v.ahora.fechaDesde)}</div>`;
                 if(v.proxima) return `<div class="prof-vac">🌴 Vacaciones del ${fmtCorta(v.proxima.fechaDesde)} al ${fmtCorta(v.proxima.fechaHasta||v.proxima.fechaDesde)}</div>`;
@@ -520,7 +527,7 @@ function renderCal() {
     const primerDia = new Date(year,month,1).getDay();
     const diasEnMes = new Date(year,month+1,0).getDate();
     const diasLaborales = new Set();
-    elegibles().forEach(p => (p.dias||[]).forEach(d => diasLaborales.add(d)));
+    elegibles().forEach(p => [0,1,2,3,4,5,6].forEach(d => { if(trabajaDia(p, d)) diasLaborales.add(d); }));
 
     let html = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'].map(d=>`<div class="cal-lbl">${d}</div>`).join('');
     for(let i=0;i<primerDia;i++) html += '<div class="cal-dia vacio"></div>';
@@ -529,7 +536,7 @@ function renderCal() {
         const diaSem = new Date(fechaStr+'T12:00').getDay();
         const esHoy = d===hoy.getDate()&&month===hoy.getMonth()&&year===hoy.getFullYear();
         const esPasado = new Date(fechaStr+'T23:59') < hoy && !esHoy;
-        const esLaboral = elegibles().some(p => (p.dias||[]).includes(diaSem) && !bloqueadoDia(p.id, fechaStr));
+        const esLaboral = elegibles().some(p => trabajaDia(p, diaSem) && !bloqueadoDia(p.id, fechaStr));
         const esSel = fechaStr===sel.fecha;
         const cls = ['cal-dia',esHoy?'hoy':'',esSel?'seleccionado':'',esPasado?'pasado':'',!esLaboral?'no-laboral':''].filter(Boolean).join(' ');
         const click = (!esPasado&&esLaboral) ? `onclick="selFecha('${fechaStr}')"` : '';
@@ -790,8 +797,8 @@ function renderGestion() {
 }
 
 window.cancelarMiTurno = async () => {
-    if(horasHasta(gestion) < HS_CANCELAR) { alert(`Ya pasó la hora del turno. Escribinos por WhatsApp si necesitás ayuda.`); renderGestion(); return; }
-    if(!confirm('¿Querés cancelar tu reserva?\n\nEsta acción liberará el horario para que pueda ser reservado por otra persona.')) return;
+    if(horasHasta(gestion) < HS_CANCELAR) { alert(`Ya faltan menos de ${HS_CANCELAR} hs. Escribinos por WhatsApp.`); renderGestion(); return; }
+    if(!confirm('¿Seguro que querés cancelar tu turno?')) return;
     try {
         const batch = writeBatch(db);
         batch.update(doc(db,'turnos',gestion.id), { estado:'cancelado', updatedAt:new Date().toISOString() });

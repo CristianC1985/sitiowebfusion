@@ -234,6 +234,56 @@ tr:hover td{background:#fafaf8}
       <div class="table-wrap"><table><thead><tr><th>Profesional</th><th>Servicios</th><th>Horarios</th><th>Acciones</th></tr></thead><tbody id="tabla-profesionales"></tbody></table></div>
     </div>
 
+    <!-- PERFIL DEL PROFESIONAL -->
+    <div class="page" id="page-perfil-prof">
+      <div class="page-header">
+        <div><h1 id="pf-titulo">Perfil del profesional</h1><p>Datos, horarios y servicios</p></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-ghost" onclick="volverProfesionales()">← Volver</button>
+          <button class="btn btn-danger" id="pf-eliminar" onclick="eliminarPerfil()">🗑 Eliminar</button>
+          <button class="btn btn-primary" id="pf-guardar" onclick="guardarPerfil()">Guardar</button>
+        </div>
+      </div>
+      <input type="hidden" id="pf-id">
+
+      <div style="background:white;border-radius:12px;box-shadow:var(--sombra);padding:22px;margin-bottom:18px">
+        <h3 style="margin-bottom:14px">Detalles del profesional</h3>
+        <div class="form-group"><label>Foto</label>
+          <div class="foto-upload"><input type="file" id="pf-foto-input" accept="image/*" onchange="previsualizarFoto(this)">
+            <img class="foto-preview" id="pf-foto-preview"><div id="pf-foto-icon" style="font-size:30px">📷</div><div class="foto-text">Hacé clic para subir una foto</div></div></div>
+        <div class="form-row">
+          <div class="form-group"><label>Nombre (*)</label><input type="text" id="pf-nombre" placeholder="Nombre"></div>
+          <div class="form-group"><label>Apellido</label><input type="text" id="pf-apellido" placeholder="Apellido"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Teléfono</label><input type="text" id="pf-tel" placeholder="Teléfono"></div>
+          <div class="form-group"><label>Especialidad</label><input type="text" id="pf-esp" placeholder="Ej: Colorista"></div>
+        </div>
+        <div class="form-group"><label>Descripción</label><textarea id="pf-desc" rows="3" placeholder="Algo breve sobre el profesional (se muestra al reservar online)"></textarea></div>
+        <div class="form-group"><label>Intervalo entre turnos</label>
+          <select id="pf-intervalo"><option value="30">30 minutos</option><option value="45">45 minutos</option><option value="60">1 hora</option><option value="90">1 hora 30 min</option><option value="120">2 horas</option></select></div>
+        <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;margin:12px 0"><input type="checkbox" id="pf-reservas" style="width:auto;margin-top:3px"><span><strong>Habilitar reservas online</strong><br><small style="color:#888">El profesional puede recibir reservas desde la web.</small></span></label>
+        <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer"><input type="checkbox" id="pf-listado" style="width:auto;margin-top:3px"><span><strong>Mostrar en listado online</strong><br><small style="color:#888">El cliente puede elegirlo; si no, solo se asigna con "Primer profesional disponible".</small></span></label>
+      </div>
+
+      <div style="background:white;border-radius:12px;box-shadow:var(--sombra);padding:22px;margin-bottom:18px">
+        <h3 style="margin-bottom:14px">Horarios del profesional</h3>
+        <div class="table-wrap" style="box-shadow:none;border:1px solid #eee"><table><thead><tr><th>Día</th><th>Hora inicio</th><th>Hora fin</th><th></th></tr></thead><tbody id="pf-horarios"></tbody></table></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-top:14px">
+          <div class="form-group" style="margin:0"><label>Día</label><select id="pf-h-dia"><option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option><option value="6">Sábado</option><option value="0">Domingo</option></select></div>
+          <div class="form-group" style="margin:0"><label>Desde</label><input type="time" id="pf-h-desde" value="10:00"></div>
+          <div class="form-group" style="margin:0"><label>Hasta</label><input type="time" id="pf-h-hasta" value="18:00"></div>
+          <button type="button" class="btn btn-ghost" onclick="agregarHorario()">+ Agregar horario</button>
+        </div>
+        <p style="font-size:12px;color:#888;margin-top:10px">Para un día con corte al mediodía, cargá dos horarios (por ejemplo 10:00–12:30 y 13:00–18:00).</p>
+      </div>
+
+      <div style="background:white;border-radius:12px;box-shadow:var(--sombra);padding:22px;margin-bottom:18px">
+        <h3 style="margin-bottom:14px">Servicios del profesional</h3>
+        <div class="table-wrap" style="box-shadow:none;border:1px solid #eee"><table><thead><tr><th style="width:40px"><input type="checkbox" id="pf-srv-todos" style="width:auto" onchange="toggleTodosServicios(this.checked)" title="Seleccionar todos"></th><th>Servicio</th><th>Descripción</th><th>Duración</th></tr></thead><tbody id="pf-servicios"></tbody></table></div>
+      </div>
+    </div>
+
     <!-- SERVICIOS -->
     <div class="page" id="page-servicios">
       <div class="page-header">
@@ -253,37 +303,6 @@ tr:hover td{background:#fafaf8}
     </div>
   </div>
 </div>
-
-<!-- MODAL PROFESIONAL -->
-<div class="modal-bg" id="modal-profesional"><div class="modal">
-  <button class="modal-cerrar" onclick="cerrarModal('modal-profesional')">×</button>
-  <h2 id="modal-prof-titulo">Nuevo Profesional</h2>
-  <input type="hidden" id="prof-id">
-  <div class="form-group"><label>Foto</label>
-    <div class="foto-upload"><input type="file" id="prof-foto-input" accept="image/*" onchange="previsualizarFoto(this)">
-      <img class="foto-preview" id="prof-foto-preview"><div class="foto-icon" id="foto-icon">📷</div><div class="foto-text">Hacé clic para subir una foto</div></div></div>
-  <div class="form-row">
-    <div class="form-group"><label>Nombre</label><input type="text" id="prof-nombre" placeholder="Nombre"></div>
-    <div class="form-group"><label>Especialidad</label><input type="text" id="prof-especialidad" placeholder="Ej: Colorista"></div>
-  </div>
-  <div class="form-group"><label>Días de atención</label>
-    <div class="horarios-grid">
-      <button type="button" class="dia-toggle" data-dia="1">Lun</button><button type="button" class="dia-toggle" data-dia="2">Mar</button>
-      <button type="button" class="dia-toggle" data-dia="3">Mié</button><button type="button" class="dia-toggle" data-dia="4">Jue</button>
-      <button type="button" class="dia-toggle" data-dia="5">Vie</button><button type="button" class="dia-toggle" data-dia="6">Sáb</button>
-      <button type="button" class="dia-toggle" data-dia="0">Dom</button>
-    </div></div>
-  <div class="form-row">
-    <div class="form-group"><label>Hora inicio</label><input type="time" id="prof-hora-inicio" value="09:00"></div>
-    <div class="form-group"><label>Hora fin</label><input type="time" id="prof-hora-fin" value="19:00"></div>
-  </div>
-  <div class="form-group"><label>Intervalo entre turnos</label>
-    <select id="prof-intervalo"><option value="30">30 minutos</option><option value="45">45 minutos</option><option value="60" selected>1 hora</option><option value="90">1 hora 30 min</option><option value="120">2 horas</option></select></div>
-  <div class="form-group"><label>Servicios que ofrece</label><div class="servicios-check" id="servicios-check"></div></div>
-  <div style="display:flex;gap:10px;margin-top:8px">
-    <button class="btn btn-ghost" style="flex:1" onclick="cerrarModal('modal-profesional')">Cancelar</button>
-    <button class="btn btn-primary" style="flex:2" onclick="guardarProfesional()">Guardar profesional</button></div>
-</div></div>
 
 <!-- MODAL SERVICIO -->
 <div class="modal-bg" id="modal-servicio"><div class="modal">
@@ -394,6 +413,7 @@ const app = initializeApp({
   appId: "1:1091187068496:web:f0c0f0dca735960a0ccb55"
 });
 const auth = getAuth(app), db = getFirestore(app), storage = getStorage(app);
+storage.maxUploadRetryTime = 8000;
 
 let profesionales = [], servicios = [], turnos = [], clientes = [], bloqueos = [];
 let calFecha = new Date(), diaSeleccionado = null, fotoFile = null;
@@ -506,7 +526,7 @@ function renderTablaServicios() {
 }
 const opcionesServicios = selId => agrupar(servicios).map(g => `<optgroup label="${esc(g.nombre)}">` +
   g.items.map(s => `<option value="${s.id}" ${s.id===selId?'selected':''}>${esc(s.nombre)} (${s.duracion}min)</option>`).join('') + '</optgroup>').join('');
-function renderChipsServicios() { $('servicios-check').innerHTML = servicios.map(s => `<span class="srv-chip" data-id="${s.id}" onclick="toggleChip(this)">${esc(s.nombre)}</span>`).join(''); }
+function renderChipsServicios() { /* los servicios del profesional se eligen ahora en su perfil */ }
 window.toggleChip = el => el.classList.toggle('activo');
 function chipsProfEnServicio(ids=[]) {
   const c = $('srv-profesionales-check');
@@ -552,44 +572,96 @@ function renderTablaProfesionales() {
   const tb = $('tabla-profesionales');
   if(!profesionales.length) { tb.innerHTML = '<tr><td colspan="4"><div class="empty"><span>💇</span><p>No hay profesionales. Agregá el primero.</p></div></td></tr>'; return; }
   const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-  tb.innerHTML = profesionales.map(p => `<tr><td><div style="display:flex;align-items:center;gap:12px">
-    ${p.foto?`<img class="avatar" src="${esc(p.foto)}" alt="">`:'<div class="avatar-placeholder">💇</div>'}<div><strong>${esc(p.nombre)}</strong><br><span style="color:#888;font-size:12px">${esc(p.especialidad||'')}</span></div></div></td>
+  tb.innerHTML = profesionales.map(p => `<tr><td><div style="display:flex;align-items:center;gap:12px;cursor:pointer" onclick="abrirPerfil('${p.id}')">
+    ${p.foto?`<img class="avatar" src="${esc(p.foto)}" alt="">`:'<div class="avatar-placeholder">💇</div>'}<div><strong>${esc(p.nombre)}${p.apellido?' '+esc(p.apellido):''}</strong><br><span style="color:#888;font-size:12px">${esc(p.especialidad||'')}</span></div></div></td>
     <td style="font-size:12px;max-width:200px">${(p.servicios||[]).map(i => esc(servicios.find(s => s.id===i)?.nombre||'')).filter(Boolean).join(', ')||'Sin servicios'}</td>
-    <td style="font-size:12px">${(p.dias||[]).map(d => dias[d]).join(', ')||'Sin días'}<br><span style="color:#888">${p.horaInicio||''}–${p.horaFin||''} · c/${p.intervalo||60}min</span></td>
-    <td><button class="btn btn-ghost btn-sm" onclick="editarProfesional('${p.id}')">✏️ Editar</button> <button class="btn btn-danger btn-sm" onclick="eliminarProfesional('${p.id}')">🗑</button></td></tr>`).join('');
+    <td style="font-size:12px">${resumenHorarios(p)}<br><span style="color:#888">turnos c/${p.intervalo||60} min${p.reservasOnline===false?' · sin reservas online':''}</span></td>
+    <td><button class="btn btn-ghost btn-sm" onclick="abrirPerfil('${p.id}')">👤 Perfil</button> <button class="btn btn-danger btn-sm" onclick="eliminarProfesional('${p.id}')">🗑</button></td></tr>`).join('');
 }
 window.previsualizarFoto = input => {
   if(!input.files?.[0]) return; fotoFile = input.files[0];
-  const r = new FileReader(); r.onload = e => { $('prof-foto-preview').src = e.target.result; $('prof-foto-preview').style.display = 'block'; $('foto-icon').style.display = 'none'; }; r.readAsDataURL(fotoFile);
+  const r = new FileReader(); r.onload = e => { $('pf-foto-preview').src = e.target.result; $('pf-foto-preview').style.display = 'block'; $('pf-foto-icon').style.display = 'none'; }; r.readAsDataURL(fotoFile);
 };
-function fotoModal(src) { $('prof-foto-preview').style.display = src?'block':'none'; if(src) $('prof-foto-preview').src = src; $('foto-icon').style.display = src?'none':'block'; fotoFile = null; }
-window.abrirModalProfesional = () => {
-  $('prof-id').value = ''; $('modal-prof-titulo').textContent = 'Nuevo Profesional';
-  $('prof-nombre').value = ''; $('prof-especialidad').value = ''; $('prof-hora-inicio').value = '09:00'; $('prof-hora-fin').value = '19:00'; $('prof-intervalo').value = '60';
-  document.querySelectorAll('.dia-toggle').forEach(d => d.classList.remove('activo')); renderChipsServicios(); fotoModal(''); abrirModal('modal-profesional');
+function fotoModal(src) { $('pf-foto-preview').style.display = src?'block':'none'; if(src) $('pf-foto-preview').src = src; $('pf-foto-icon').style.display = src?'none':'block'; fotoFile = null; $('pf-foto-input').value = ''; }
+
+// ── Perfil del profesional ──
+const DIAS_N = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const DIAS_C = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const ORDEN_DIAS = [1,2,3,4,5,6,0];
+const resumenHorarios = p => {
+  const hs = horariosDe(p); if(!hs.length) return 'Sin horarios';
+  return ORDEN_DIAS.filter(d => hs.some(h => h.dia===d)).map(d => `${DIAS_C[d]} ${tramosDia(p,d).map(([a,b]) => `${a}–${b}`).join(', ')}`).join(' · ');
 };
-window.editarProfesional = id => {
-  const p = profesionales.find(x => x.id===id); if(!p) return;
-  $('prof-id').value = id; $('modal-prof-titulo').textContent = 'Editar Profesional';
-  $('prof-nombre').value = p.nombre; $('prof-especialidad').value = p.especialidad||''; $('prof-hora-inicio').value = p.horaInicio||'09:00'; $('prof-hora-fin').value = p.horaFin||'19:00'; $('prof-intervalo').value = p.intervalo||60;
-  document.querySelectorAll('.dia-toggle').forEach(d => d.classList.toggle('activo', (p.dias||[]).includes(parseInt(d.dataset.dia))));
-  renderChipsServicios(); document.querySelectorAll('#servicios-check .srv-chip').forEach(c => c.classList.toggle('activo', (p.servicios||[]).includes(c.dataset.id)));
-  fotoModal(p.foto||''); abrirModal('modal-profesional');
+let perfilHorarios = [], perfilServicios = new Set();
+window.abrirPerfil = id => {
+  const p = id ? profesionales.find(x => x.id===id) : null;
+  if(id && !p) return;
+  $('pf-id').value = id || '';
+  $('pf-titulo').textContent = p ? `Perfil de ${p.nombre}${p.apellido ? ' '+p.apellido : ''}` : 'Nuevo profesional';
+  $('pf-nombre').value = p?.nombre || ''; $('pf-apellido').value = p?.apellido || ''; $('pf-tel').value = p?.telefono || '';
+  $('pf-esp').value = p?.especialidad || ''; $('pf-desc').value = p?.descripcion || '';
+  $('pf-intervalo').value = String(p?.intervalo || 60);
+  $('pf-reservas').checked = p ? p.reservasOnline !== false : true;
+  $('pf-listado').checked = p ? p.mostrarListado !== false : true;
+  perfilHorarios = p ? horariosDe(p).map(h => ({ ...h })) : [];
+  perfilServicios = new Set(p?.servicios || []);
+  fotoModal(p?.foto || '');
+  renderPerfilHorarios(); renderPerfilServicios();
+  $('pf-eliminar').style.display = id ? '' : 'none';
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('activo'));
+  $('page-perfil-prof').classList.add('activo');
+  window.scrollTo(0, 0);
 };
-window.guardarProfesional = async () => {
-  const id = $('prof-id').value;
-  const data = { nombre:$('prof-nombre').value.trim(), especialidad:$('prof-especialidad').value.trim(), horaInicio:$('prof-hora-inicio').value, horaFin:$('prof-hora-fin').value, intervalo:parseInt($('prof-intervalo').value),
-    dias:[...document.querySelectorAll('.dia-toggle.activo')].map(d => parseInt(d.dataset.dia)), servicios:[...document.querySelectorAll('#servicios-check .srv-chip.activo')].map(c => c.dataset.id),
-    foto: id ? (profesionales.find(p => p.id===id)?.foto||'') : '' };
-  if(!data.nombre) { toast('Ingresá un nombre','error'); return; }
+window.editarProfesional = id => abrirPerfil(id);
+window.abrirModalProfesional = () => abrirPerfil('');
+window.volverProfesionales = () => irA('profesionales');
+function renderPerfilHorarios() {
+  const orden = h => ORDEN_DIAS.indexOf(h.dia) * 10000 + parseInt(h.desde.replace(':',''));
+  const lista = perfilHorarios.map((h,i) => ({ ...h, i })).sort((a,b) => orden(a) - orden(b));
+  $('pf-horarios').innerHTML = lista.length
+    ? lista.map(h => `<tr><td>${DIAS_N[h.dia]}</td><td>${h.desde}</td><td>${h.hasta}</td><td style="text-align:right"><button type="button" class="btn btn-danger btn-sm" onclick="quitarHorario(${h.i})">🗑</button></td></tr>`).join('')
+    : '<tr><td colspan="4" style="color:#999;text-align:center;padding:18px">Todavía no cargaste horarios</td></tr>';
+}
+window.agregarHorario = () => {
+  const dia = parseInt($('pf-h-dia').value), desde = $('pf-h-desde').value, hasta = $('pf-h-hasta').value;
+  if(!desde || !hasta || hasta <= desde) { toast('Revisá la hora de inicio y de fin','error'); return; }
+  if(perfilHorarios.some(h => h.dia===dia && desde < h.hasta && hasta > h.desde)) { toast('Ese horario se superpone con otro del mismo día','error'); return; }
+  perfilHorarios.push({ dia, desde, hasta }); renderPerfilHorarios();
+};
+window.quitarHorario = i => { perfilHorarios.splice(i,1); renderPerfilHorarios(); };
+function renderPerfilServicios() {
+  const lista = servicios.slice().sort((a,b) => (a.nombre||'').localeCompare(b.nombre||'','es'));
+  $('pf-servicios').innerHTML = lista.length
+    ? lista.map(s => `<tr><td><input type="checkbox" style="width:auto" ${perfilServicios.has(s.id)?'checked':''} onchange="toggleServicioPerfil('${s.id}', this.checked)"></td><td><strong>${esc(s.nombre)}</strong></td><td style="color:#777;font-size:13px">${esc(s.descripcion||'')}</td><td>${s.duracion} min</td></tr>`).join('')
+    : '<tr><td colspan="4" style="color:#999;text-align:center;padding:18px">Primero creá servicios en la sección Servicios</td></tr>';
+  $('pf-srv-todos').checked = lista.length > 0 && lista.every(s => perfilServicios.has(s.id));
+}
+window.toggleServicioPerfil = (id, on) => { on ? perfilServicios.add(id) : perfilServicios.delete(id); renderPerfilServicios(); };
+window.toggleTodosServicios = on => { servicios.forEach(s => on ? perfilServicios.add(s.id) : perfilServicios.delete(s.id)); renderPerfilServicios(); };
+window.guardarPerfil = async () => {
+  const id = $('pf-id').value, nombre = $('pf-nombre').value.trim();
+  if(!nombre) { toast('Ingresá el nombre','error'); return; }
+  const previo = id ? profesionales.find(p => p.id===id) : null;
+  const hs = perfilHorarios.slice().sort((a,b) => ORDEN_DIAS.indexOf(a.dia) - ORDEN_DIAS.indexOf(b.dia) || (a.desde > b.desde ? 1 : -1));
+  const data = { ...(previo ? sinId(previo) : {}),
+    nombre, apellido:$('pf-apellido').value.trim(), telefono:$('pf-tel').value.trim(), especialidad:$('pf-esp').value.trim(), descripcion:$('pf-desc').value.trim(),
+    intervalo:parseInt($('pf-intervalo').value), horarios:hs,
+    dias:[...new Set(hs.map(h => h.dia))],
+    horaInicio: hs.length ? hs.map(h => h.desde).sort()[0] : '09:00', horaFin: hs.length ? hs.map(h => h.hasta).sort().slice(-1)[0] : '19:00',
+    servicios:[...perfilServicios], reservasOnline:$('pf-reservas').checked, mostrarListado:$('pf-listado').checked, foto: previo?.foto || '' };
+  const btn = $('pf-guardar'); btn.disabled = true;
   try {
-    if(fotoFile) { const r = ref(storage, `profesionales/${Date.now()}_${fotoFile.name}`); data.foto = await getDownloadURL((await uploadBytes(r, fotoFile)).ref); }
+    if(fotoFile) {
+      try { const r = ref(storage, `profesionales/${Date.now()}_${fotoFile.name}`); data.foto = await getDownloadURL((await uploadBytes(r, fotoFile)).ref); }
+      catch(e) { console.error(e); toast('No se pudo subir la foto; se guarda el resto','error'); }
+    }
     if(id) await setDoc(doc(db,'profesionales',id), data); else await addDoc(collection(db,'profesionales'), data);
-    cerrarModal('modal-profesional'); await cargar('profesionales'); toast('Profesional guardado ✓','success');
+    await cargar('profesionales'); toast('Profesional guardado ✓','success'); irA('profesionales');
   } catch(e) { console.error(e); toast('Error al guardar','error'); }
+  btn.disabled = false;
 };
+window.eliminarPerfil = async () => { const id = $('pf-id').value; if(!id) return; await eliminarProfesional(id); irA('profesionales'); };
 window.eliminarProfesional = async id => { if(!confirm('¿Eliminar este profesional?')) return; await deleteDoc(doc(db,'profesionales',id)); await cargar('profesionales'); toast('Profesional eliminado','success'); };
-document.querySelectorAll('.dia-toggle').forEach(b => b.addEventListener('click', () => b.classList.toggle('activo')));
 
 // ═══ CLIENTES ═══
 const fotoDeCliente = c => [...turnos].filter(t => t.foto && telKey(t.tel) && telKey(t.tel)===telKey(c.tel)).sort((a,b) => (b.creadoEn||'') > (a.creadoEn||'') ? 1 : -1)[0]?.foto || '';
@@ -756,6 +828,11 @@ window.editarTurno = id => {
   $('turno-sobre').checked = !!t.sobreturno; $('turno-hora-libre').value = t.hora; toggleSobreturno();
   cargarHorariosDisponibles(t.hora); abrirModal('modal-turno');
 };
+// ── Horarios del profesional (varios tramos por día). Compatible con el formato anterior (dias + horaInicio/horaFin) ──
+const horariosDe = p => (Array.isArray(p.horarios) && p.horarios.length) ? p.horarios : (p.dias||[]).map(d => ({ dia:d, desde:p.horaInicio||'09:00', hasta:p.horaFin||'19:00' }));
+const tramosDia = (p, dia) => horariosDe(p).filter(h => h.dia===dia).sort((a,b) => a.desde > b.desde ? 1 : -1).map(h => [h.desde, h.hasta]);
+const trabajaDia = (p, dia) => tramosDia(p, dia).length > 0;
+const slotsDia = (p, dia) => { const s = new Set(); tramosDia(p, dia).forEach(([d,h]) => generarSlots(d, h, p.intervalo||60).forEach(x => s.add(x))); return [...s].sort(); };
 function generarSlots(inicio, fin, iv) {
   const out = []; let [h,m] = inicio.split(':').map(Number); const [hf,mf] = fin.split(':').map(Number);
   while(h*60+m < hf*60+mf) { out.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`); m += iv; h += Math.floor(m/60); m %= 60; }
@@ -768,9 +845,9 @@ window.cargarHorariosDisponibles = horaActual => {
   const prof = profesionales.find(p => p.id===profId); if(!prof) return;
   const bd = bloqueoDia(profId, fecha);
   if(bd) { sel.innerHTML = `<option value="">${bd.tipo==='vacaciones'?'De vacaciones':'Día bloqueado'} — usá sobreturno</option>`; return; }
-  if(!(prof.dias||[]).includes(new Date(fecha+'T12:00:00').getDay())) { sel.innerHTML = '<option value="">Profesional no trabaja este día — usá sobreturno</option>'; return; }
+  if(!trabajaDia(prof, new Date(fecha+'T12:00:00').getDay())) { sel.innerHTML = '<option value="">Profesional no trabaja este día — usá sobreturno</option>'; return; }
   const ocup = turnos.filter(t => t.fecha===fecha && t.profesionalId===profId && t.estado!=='cancelado' && !t.sobreturno && t.id!==$('turno-id').value).map(t => t.hora);
-  const libres = generarSlots(prof.horaInicio||'09:00', prof.horaFin||'19:00', prof.intervalo||60).filter(h => h===horaActual || (!ocup.includes(h) && !bloqueoHora(profId, fecha, h)));
+  const libres = slotsDia(prof, new Date(fecha+'T12:00:00').getDay()).filter(h => h===horaActual || (!ocup.includes(h) && !bloqueoHora(profId, fecha, h)));
   sel.innerHTML = libres.length ? libres.map(h => `<option value="${h}" ${h===horaActual?'selected':''}>${h}</option>`).join('') : '<option value="">Sin horarios — usá sobreturno</option>';
 };
 window.guardarTurno = async () => {
@@ -805,7 +882,7 @@ function enviarRecordatorio(t, tipo) {
   const num = telKey(t.tel), numWsp = num.startsWith('54') ? num : `549${num.replace(/^0/,'')}`;
   const intro = tipo==='1dia' ? `¡Hola ${t.cliente}! 👋 Te recordamos que *mañana* tenés turno en *Fusión Peluquería*:` : `¡Hola ${t.cliente}! 👋 Te recordamos que en *1 hora* tenés turno en *Fusión Peluquería*:`;
   const link = `${new URL('turnos.html', location.href).href}?turno=${t.id}`;
-  const msg = encodeURIComponent(`${intro}\n\n📅 *Fecha:* ${formatFecha(t.fecha)}\n🕐 *Hora:* ${t.hora}hs\n✂️ *Servicio:* ${srv?.nombre||'Consultar'}\n💇 *Profesional:* ${prof?.nombre||'Consultar'}\n\n📍 José María Paz 1612, San Miguel\n\n🔗 Cancelar (hasta 24 hs antes) o cambiar (hasta 2 hs antes): ${link}\n\n¡Te esperamos! 💛`);
+  const msg = encodeURIComponent(`${intro}\n\n📅 *Fecha:* ${formatFecha(t.fecha)}\n🕐 *Hora:* ${t.hora}hs\n✂️ *Servicio:* ${srv?.nombre||'Consultar'}\n💇 *Profesional:* ${prof?.nombre||'Consultar'}\n\n📍 José María Paz 1612, San Miguel\n\n🔗 Cancelar o cambiar (hasta 2 hs antes): ${link}\n\n¡Te esperamos! 💛`);
   window.open(`https://wa.me/${numWsp}?text=${msg}`, '_blank');
   toast(`Recordatorio abierto para ${t.cliente} ✓`, 'success');
 }
@@ -832,7 +909,7 @@ async function mandarMailRecordatorio(t) {
       mensaje: `te recordamos que tenés turno ${cuando} en Fusión Peluquería:`, cliente: t.cliente,
       servicio: srv?.nombre || '', profesional: prof?.nombre || '', fecha: fechaMail(t.fecha), hora: t.hora,
       direccion: 'José María Paz 1612, San Miguel', maps: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('José María Paz 1612, San Miguel, Buenos Aires, Argentina'), link, boton: 'Modificar o cancelar mi turno',
-      pie: 'Si no podés venir, cancelá tu turno con anticipación (hasta 24 hs antes). Tenemos 10 minutos de tolerancia.'
+      pie: 'Si no podés venir, cancelá tu turno desde el botón. Tenemos 10 minutos de tolerancia.'
     } })
   });
   if(!r.ok) throw new Error(await r.text());
